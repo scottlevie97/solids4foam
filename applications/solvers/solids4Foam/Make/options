@@ -24,6 +24,7 @@ endif
 EXE_INC = \
     -I../../../src/solids4FoamModels/lnInclude \
     -I../../../src/blockCoupledSolids4FoamTools/lnInclude \
+    -I../../../src/solidsMLmodels/lnInclude \
     $(VERSION_SPECIFIC_INC) \
     -I$(LIB_SRC)/finiteVolume/lnInclude \
     -I$(LIB_SRC)/meshTools/lnInclude \
@@ -33,5 +34,7 @@ EXE_INC = \
     -I$(LIB_SRC)/dynamicFvMesh/lnInclude
 
 EXE_LIBS = \
-    -L$(FOAM_USER_LIBBIN) -lsolids4FoamModels \
-    $(GFORTRAN_LIBS)
+    -L$(FOAM_USER_LIBBIN) \
+    -lsolids4FoamModels \
+    -lsolidsMLmodels \
+    $(GFORTRAN_LIBS) 
