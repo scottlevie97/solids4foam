@@ -5,3 +5,6 @@ echo
 echo "Cleaning ThirdParty"
 
 \rm -rf eigen3*
+\rm -rf FunctionalPlus*
+\rm -rf json*
+\rm -rf frugally-deep*

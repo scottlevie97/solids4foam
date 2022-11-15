@@ -59,4 +59,43 @@ else
     fi
 fi
 
+if [ -d $(pwd)/FunctionalPlus ]
+then
+    echo "FunctionalPlus found."
+else
+    echo "Downloading FunctionalPlus"
+    git clone -b 'v0.2.18-p0' --single-branch --depth 1 https://github.com/Dobiasd/FunctionalPlus
+    if [ $? -ne 0 ]
+    then
+        echo "Downloading FunctionalPlus failed!"; echo
+        exit 1
+    fi
+fi
+
+if [ -d $(pwd)/json ]
+then
+    echo "json found."
+else
+    echo "Downloading json"
+    git clone -b 'v3.9.1' --single-branch --depth 1 https://github.com/nlohmann/json
+    if [ $? -ne 0 ]
+    then
+        echo "Downloading json failed!"; echo
+        exit 1
+    fi
+fi
+
+if [ -d $(pwd)/frugally-deep ]
+then
+    echo "frugally-deep found."
+else
+    echo "Downloading frugally-deep"
+    git clone https://github.com/Dobiasd/frugally-deep
+    if [ $? -ne 0 ]
+    then
+        echo "Downloading frugally-deep failed!"; echo
+        exit 1
+    fi
+fi
+
 echo "ThirdParty done"; echo
