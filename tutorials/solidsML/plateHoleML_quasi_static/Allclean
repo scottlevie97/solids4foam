@@ -1,0 +1,17 @@
+#!/bin/bash
+
+cd mesh10/plateHole 
+
+./Allclean
+
+cd ../../mesh100/plateHole
+
+./Allclean
+
+cd ../plateHole_ML 
+
+./Allclean
+
+cd ../../machine_learning
+
+./Allclean
