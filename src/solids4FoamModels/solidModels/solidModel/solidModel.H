@@ -171,6 +171,9 @@ class solidModel
         //- Residual file
         autoPtr<OFstream> residualFilePtr_;
 
+        //- Iteration time file
+        autoPtr<OFstream> iterationTimeFilePtr_;
+
         //- Switch to write the residual field
         const Switch writeResidualField_;
 

@@ -1298,6 +1298,7 @@ Foam::solidModel::solidModel
     minCorr_(solidModelDict().lookupOrDefault<int>("minCorrectors", 1)),
     maxIterReached_(0),
     residualFilePtr_(),
+    iterationTimeFilePtr_(),
     writeResidualField_
     (
         solidModelDict().lookupOrDefault<Switch>("writeResidualField", false)
@@ -1429,6 +1430,23 @@ Foam::solidModel::solidModel
             (
                 new OFstream(runTime.path()/"residual.dat")
             );
+            residualFilePtr_()
+                << "Time solverPerfInitRes residualvf materialResidual outerCorrector"<< endl;
+        }
+    }
+
+    // If requested, create the iteration time file
+    if (solidModelDict().lookupOrDefault<Switch>("iterationTimeFile", false))
+    {
+        if (Pstream::master())
+        {
+            Info<< "Creating iterationTime.dat" << endl;
+            iterationTimeFilePtr_.set
+            (
+                new OFstream(runTime.path()/"iterationTime.dat")
+            );
+            iterationTimeFilePtr_()
+                << "Time iteration ExecutionTime CPUTime"<< endl;
         }
     }
 

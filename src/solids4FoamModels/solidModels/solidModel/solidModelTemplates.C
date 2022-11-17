@@ -138,33 +138,45 @@ bool Foam::solidModel::converged
     {
         Info<< "    Corr, res, relRes, matRes, iters" << endl;
     }
-    else if (iCorr % infoFrequency_ == 0 || converged)
+    // else if (iCorr % infoFrequency_ == 0 || converged)     
+    // Above prints residuals for outer corrector in multiples of 100
+    // or if converged  
+    else if (converged) 
     {
         Info<< "    " << iCorr
             << ", " << solverPerfInitRes
             << ", " << residualvf
             << ", " << materialResidual
             << ", " << solverPerfNIters << endl;
-
+        
         if (residualFilePtr_.valid())
         {
             residualFilePtr_()
+                << runTime().value() << " "
                 << solverPerfInitRes << " "
                 << residualvf << " "
-                << materialResidual
+                << materialResidual << " "
+                << iCorr << " "
                 << endl;
         }
-
-        if (converged)
-        {
-            Info<< endl;
-        }
+       
     }
     else if (iCorr == nCorr_ - 1)
     {
         maxIterReached_++;
         Warning
             << "Max iterations reached within momentum loop" << endl;
+    }
+
+    // Print time iteration values
+    if (iterationTimeFilePtr_.valid())
+    {
+        iterationTimeFilePtr_()
+            << runTime().value() << " "
+            << iCorr << " "
+            << runTime().elapsedCpuTime() << " "
+            << runTime().elapsedClockTime() << " "
+            << endl;
     }
 
     return converged;
