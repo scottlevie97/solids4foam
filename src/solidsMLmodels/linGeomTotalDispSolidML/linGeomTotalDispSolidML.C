@@ -100,6 +100,7 @@ namespace Foam
             fvm::d2dt2(D());
 
             // For consistent restarts, we will calculate the gradient field
+            D().correctBoundaryConditions();
             D().storePrevIter();
             mechanical().grad(D(), gradD());
 
@@ -192,13 +193,8 @@ namespace Foam
                 // Momentum equation loop
                 do
                 {
-                    if (iCorr < machinePredictorIter_)
-                    {
-                        Info << iCorr << endl;
-                    }
 
                     // Store previous D fields
-
                     if (machineLearning_ && iCorr > 0 && iCorr < prevCellD_.size() + 1)
                     {
                         prevCellD_[iCorr - 1] = D();
@@ -226,7 +222,12 @@ namespace Foam
 
                     // Linear momentum equation total displacement form
                     fvVectorMatrix DEqn(
-                        rho() * fvm::d2dt2(D()) == fvm::laplacian(impKf_, D(), "laplacian(DD,D)") - fvc::laplacian(impKf_, D(), "laplacian(DD,D)") + fvc::div(sigma(), "div(sigma)") + rho() * g() + stabilisation().stabilisation(D(), gradD(), impK_));
+                        rho() * fvm::d2dt2(D()) 
+                        == fvm::laplacian(impKf_, D(), "laplacian(DD,D)") 
+                        - fvc::laplacian(impKf_, D(), "laplacian(DD,D)") 
+                        + fvc::div(sigma(), "div(sigma)") + rho() * g() 
+                        + stabilisation().stabilisation(D(), gradD(), impK_));
+
 
                     // Under-relaxation the linear system
                     DEqn.relax();
@@ -242,7 +243,15 @@ namespace Foam
                     // Solve the linear system
                     solverPerfD = DEqn.solve();
 
-                    if (iCorr != machinePredictorIter_)
+
+
+                    // Relax fields when not predicting
+                    if(!machineLearning_)
+                    {
+                        // Fixed or adaptive field under-relaxation
+                        relaxField(D(), iCorr); 
+                    }
+                    else if (machineLearning_ && (iCorr != machinePredictorIter_))
                     {
                         // Fixed or adaptive field under-relaxation
                         relaxField(D(), iCorr);
