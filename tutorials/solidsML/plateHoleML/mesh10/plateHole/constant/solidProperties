@@ -30,6 +30,9 @@ solidModel     linearGeometryTotalDisplacementML;
     // Write displacement field at each iteration
     writeDisplacementField yes;
 
+    // Write time for each iteration
+    iterationTimeFile yes;
+
     // Write D field up until this iteration
     writeDisplacementLimit 20;
 

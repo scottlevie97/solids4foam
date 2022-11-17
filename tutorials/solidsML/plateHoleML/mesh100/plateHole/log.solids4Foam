@@ -7,12 +7,12 @@
 \*---------------------------------------------------------------------------*/
 Build  : 4.1-70b064d0f326
 Exec   : solids4Foam
-Date   : Nov 16 2022
-Time   : 13:20:37
+Date   : Nov 17 2022
+Time   : 09:52:28
 Host   : "Levie-Laptop"
-PID    : 15228
-CtrlDict : "/home/scottlevie/foam/scottlevie-4.1/solids4foam/tutorials/solidsML/plateHoleML/mesh100/plateHole/system/controlDict"
-Case   : /home/scottlevie/foam/scottlevie-4.1/solids4foam/tutorials/solidsML/plateHoleML/mesh100/plateHole
+PID    : 5128
+CtrlDict : "/home/scottlevie/foam/scottlevie-4.1/run/plateHoleML/mesh100/plateHole/system/controlDict"
+Case   : /home/scottlevie/foam/scottlevie-4.1/run/plateHoleML/mesh100/plateHole
 nProcs : 1
 sigFpe : Enabling floating point exception trapping (FOAM_SIGFPE).
 allowSystemOperations : Disallowing user-supplied system call operations
@@ -45,6 +45,7 @@ Creating solidTraction boundary condition
 Creating solidTraction boundary condition
     under-relaxation method: fixed
 Creating residual.dat
+Creating iterationTime.dat
 Creating the mechanicalModel
 Selecting mechanical law linearElastic
 Creating BCloopCorr.dat
@@ -60,7 +61,7 @@ setCellDisplacements: reading cellDisplacements
     Corr, res, relRes, matRes, iters
     The relative residual has converged
     268, 9.97568e-10, 0, 0, 0
-ExecutionTime = 200.54 s  ClockTime = 200 s
+ExecutionTime = 314.69 s  ClockTime = 315 s
 
 Time = 2
 
@@ -69,7 +70,7 @@ Solving the momentum equation for D
     Corr, res, relRes, matRes, iters
     The relative residual has converged
     255, 9.87713e-10, 0, 0, 0
-ExecutionTime = 393.48 s  ClockTime = 393 s
+ExecutionTime = 599.78 s  ClockTime = 600 s
 
 Time = 3
 
@@ -78,7 +79,7 @@ Solving the momentum equation for D
     Corr, res, relRes, matRes, iters
     The relative residual has converged
     247, 9.82536e-10, 0, 0, 0
-ExecutionTime = 570.32 s  ClockTime = 570 s
+ExecutionTime = 874.23 s  ClockTime = 875 s
 
 Time = 4
 
@@ -87,7 +88,7 @@ Solving the momentum equation for D
     Corr, res, relRes, matRes, iters
     The relative residual has converged
     240, 9.62332e-10, 0, 0, 0
-ExecutionTime = 745.64 s  ClockTime = 746 s
+ExecutionTime = 1141.86 s  ClockTime = 1142 s
 
 Time = 5
 
@@ -96,7 +97,7 @@ Solving the momentum equation for D
     Corr, res, relRes, matRes, iters
     The relative residual has converged
     239, 9.48781e-10, 0, 0, 0
-ExecutionTime = 914.79 s  ClockTime = 915 s
+ExecutionTime = 1406.2 s  ClockTime = 1407 s
 
 Time = 6
 
@@ -105,7 +106,7 @@ Solving the momentum equation for D
     Corr, res, relRes, matRes, iters
     The relative residual has converged
     232, 9.96234e-10, 0, 0, 0
-ExecutionTime = 1082.2 s  ClockTime = 1082 s
+ExecutionTime = 1679.14 s  ClockTime = 1680 s
 
 Time = 7
 
@@ -114,7 +115,7 @@ Solving the momentum equation for D
     Corr, res, relRes, matRes, iters
     The relative residual has converged
     229, 9.84596e-10, 0, 0, 0
-ExecutionTime = 1330.12 s  ClockTime = 1339 s
+ExecutionTime = 1957.63 s  ClockTime = 1958 s
 
 Time = 8
 
@@ -123,7 +124,7 @@ Solving the momentum equation for D
     Corr, res, relRes, matRes, iters
     The relative residual has converged
     227, 9.45553e-10, 0, 0, 0
-ExecutionTime = 1488.89 s  ClockTime = 1498 s
+ExecutionTime = 2222.66 s  ClockTime = 2223 s
 
 Time = 9
 
@@ -132,7 +133,7 @@ Solving the momentum equation for D
     Corr, res, relRes, matRes, iters
     The relative residual has converged
     228, 9.14748e-10, 0, 0, 0
-ExecutionTime = 1651.21 s  ClockTime = 1660 s
+ExecutionTime = 2489.51 s  ClockTime = 2490 s
 
 Time = 10
 
@@ -143,7 +144,7 @@ Solving the momentum equation for D
     223, 9.848e-10, 0, 0, 0
 Max epsilonEq = 1.3561e-05
 Max sigmaEq (von Mises stress) = 3.12946e+06
-ExecutionTime = 1814.03 s  ClockTime = 1823 s
+ExecutionTime = 2759.88 s  ClockTime = 2761 s
 
 The momentum equation converged in all time-steps
 

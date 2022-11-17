@@ -7,12 +7,12 @@
 \*---------------------------------------------------------------------------*/
 Build  : 4.1-70b064d0f326
 Exec   : solids4Foam
-Date   : Nov 16 2022
-Time   : 13:01:28
+Date   : Nov 17 2022
+Time   : 10:18:25
 Host   : "Levie-Laptop"
-PID    : 11852
-CtrlDict : "/home/scottlevie/foam/scottlevie-4.1/solids4foam/tutorials/solidsML/plateHoleML/mesh10/plateHole/system/controlDict"
-Case   : /home/scottlevie/foam/scottlevie-4.1/solids4foam/tutorials/solidsML/plateHoleML/mesh10/plateHole
+PID    : 9621
+CtrlDict : "/home/scottlevie/foam/scottlevie-4.1/run/plateHoleML/mesh10/plateHole/system/controlDict"
+Case   : /home/scottlevie/foam/scottlevie-4.1/run/plateHoleML/mesh10/plateHole
 nProcs : 1
 sigFpe : Enabling floating point exception trapping (FOAM_SIGFPE).
 allowSystemOperations : Disallowing user-supplied system call operations
@@ -45,6 +45,7 @@ Creating solidTraction boundary condition
 Creating solidTraction boundary condition
     under-relaxation method: fixed
 Creating residual.dat
+Creating iterationTime.dat
 Creating the mechanicalModel
 Selecting mechanical law linearElastic
 Creating BCloopCorr.dat
@@ -62,7 +63,7 @@ setCellDisplacements: reading cellDisplacements
     298, 9.66799e-10, 0, 0, 0
 Max epsilonEq = 1.16083e-06
 Max sigmaEq (von Mises stress) = 267884
-ExecutionTime = 0.31 s  ClockTime = 1 s
+ExecutionTime = 0.6 s  ClockTime = 0 s
 
 Time = 2
 
@@ -73,7 +74,7 @@ Solving the momentum equation for D
     284, 9.75058e-10, 0, 0, 0
 Max epsilonEq = 2.32166e-06
 Max sigmaEq (von Mises stress) = 535768
-ExecutionTime = 0.63 s  ClockTime = 1 s
+ExecutionTime = 1.19 s  ClockTime = 1 s
 
 Time = 3
 
@@ -84,7 +85,7 @@ Solving the momentum equation for D
     276, 9.76986e-10, 0, 0, 0
 Max epsilonEq = 3.48249e-06
 Max sigmaEq (von Mises stress) = 803653
-ExecutionTime = 0.96 s  ClockTime = 1 s
+ExecutionTime = 1.73 s  ClockTime = 1 s
 
 Time = 4
 
@@ -95,7 +96,7 @@ Solving the momentum equation for D
     271, 9.62192e-10, 0, 0, 0
 Max epsilonEq = 4.64333e-06
 Max sigmaEq (von Mises stress) = 1.07154e+06
-ExecutionTime = 1.25 s  ClockTime = 1 s
+ExecutionTime = 2.27 s  ClockTime = 2 s
 
 Time = 5
 
@@ -106,7 +107,7 @@ Solving the momentum equation for D
     267, 9.85626e-10, 0, 0, 0
 Max epsilonEq = 5.80416e-06
 Max sigmaEq (von Mises stress) = 1.33942e+06
-ExecutionTime = 1.57 s  ClockTime = 2 s
+ExecutionTime = 2.77 s  ClockTime = 2 s
 
 Time = 6
 
@@ -117,7 +118,7 @@ Solving the momentum equation for D
     263, 9.63933e-10, 0, 0, 0
 Max epsilonEq = 6.96499e-06
 Max sigmaEq (von Mises stress) = 1.60731e+06
-ExecutionTime = 1.87 s  ClockTime = 2 s
+ExecutionTime = 3.28 s  ClockTime = 3 s
 
 Time = 7
 
@@ -128,7 +129,7 @@ Solving the momentum equation for D
     260, 9.57319e-10, 0, 0, 0
 Max epsilonEq = 8.12582e-06
 Max sigmaEq (von Mises stress) = 1.87519e+06
-ExecutionTime = 2.19 s  ClockTime = 2 s
+ExecutionTime = 3.73 s  ClockTime = 3 s
 
 Time = 8
 
@@ -139,7 +140,7 @@ Solving the momentum equation for D
     256, 9.71257e-10, 0, 0, 0
 Max epsilonEq = 9.28665e-06
 Max sigmaEq (von Mises stress) = 2.14307e+06
-ExecutionTime = 2.48 s  ClockTime = 3 s
+ExecutionTime = 4.2 s  ClockTime = 4 s
 
 Time = 9
 
@@ -150,7 +151,7 @@ Solving the momentum equation for D
     255, 9.61499e-10, 0, 0, 0
 Max epsilonEq = 1.04475e-05
 Max sigmaEq (von Mises stress) = 2.41096e+06
-ExecutionTime = 2.83 s  ClockTime = 3 s
+ExecutionTime = 4.67 s  ClockTime = 4 s
 
 Time = 10
 
@@ -161,7 +162,7 @@ Solving the momentum equation for D
     253, 9.56703e-10, 0, 0, 0
 Max epsilonEq = 1.16083e-05
 Max sigmaEq (von Mises stress) = 2.67884e+06
-ExecutionTime = 3.13 s  ClockTime = 3 s
+ExecutionTime = 5.12 s  ClockTime = 5 s
 
 The momentum equation converged in all time-steps
 

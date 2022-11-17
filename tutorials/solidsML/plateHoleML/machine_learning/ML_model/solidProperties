@@ -27,6 +27,9 @@ solidModel     linearGeometryTotalDisplacementML;
     // Predict displacement
     machineLearning yes;
 
+    // Write time for each iteration
+    iterationTimeFile yes;
+
     jsonFile "../../machine_learning/ML_model/fdeep_model.json";
 
 	iterationToApplyMachineLearningPredictor 20; 

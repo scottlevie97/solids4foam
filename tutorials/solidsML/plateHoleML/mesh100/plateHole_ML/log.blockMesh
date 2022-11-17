@@ -7,12 +7,12 @@
 \*---------------------------------------------------------------------------*/
 Build  : 4.1-70b064d0f326
 Exec   : blockMesh
-Date   : Nov 16 2022
-Time   : 13:04:55
+Date   : Nov 17 2022
+Time   : 09:56:23
 Host   : "Levie-Laptop"
-PID    : 13369
-CtrlDict : "/home/scottlevie/foam/scottlevie-4.1/solids4foam/tutorials/solidsML/plateHoleML/mesh100/plateHole_ML/system/controlDict"
-Case   : /home/scottlevie/foam/scottlevie-4.1/solids4foam/tutorials/solidsML/plateHoleML/mesh100/plateHole_ML
+PID    : 6586
+CtrlDict : "/home/scottlevie/foam/scottlevie-4.1/run/plateHoleML/mesh100/plateHole_ML/system/controlDict"
+Case   : /home/scottlevie/foam/scottlevie-4.1/run/plateHoleML/mesh100/plateHole_ML
 nProcs : 1
 sigFpe : Enabling floating point exception trapping (FOAM_SIGFPE).
 allowSystemOperations : Disallowing user-supplied system call operations
@@ -22,7 +22,7 @@ Create time
 
 
 Creating block mesh from
-    "/home/scottlevie/foam/scottlevie-4.1/solids4foam/tutorials/solidsML/plateHoleML/mesh100/plateHole_ML/constant/polyMesh/blockMeshDict"
+    "/home/scottlevie/foam/scottlevie-4.1/run/plateHoleML/mesh100/plateHole_ML/constant/polyMesh/blockMeshDict"
 
 Creating curved edges
 Creating topology blocks

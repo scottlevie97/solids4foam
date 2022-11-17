@@ -7,12 +7,12 @@
 \*---------------------------------------------------------------------------*/
 Build  : 4.1-70b064d0f326
 Exec   : solids4Foam
-Date   : Nov 16 2022
-Time   : 13:04:56
+Date   : Nov 17 2022
+Time   : 09:56:24
 Host   : "Levie-Laptop"
-PID    : 13383
-CtrlDict : "/home/scottlevie/foam/scottlevie-4.1/solids4foam/tutorials/solidsML/plateHoleML/mesh100/plateHole_ML/system/controlDict"
-Case   : /home/scottlevie/foam/scottlevie-4.1/solids4foam/tutorials/solidsML/plateHoleML/mesh100/plateHole_ML
+PID    : 6598
+CtrlDict : "/home/scottlevie/foam/scottlevie-4.1/run/plateHoleML/mesh100/plateHole_ML/system/controlDict"
+Case   : /home/scottlevie/foam/scottlevie-4.1/run/plateHoleML/mesh100/plateHole_ML
 nProcs : 1
 sigFpe : Enabling floating point exception trapping (FOAM_SIGFPE).
 allowSystemOperations : Disallowing user-supplied system call operations
@@ -45,6 +45,7 @@ Creating solidTraction boundary condition
 Creating solidTraction boundary condition
     under-relaxation method: fixed
 Creating residual.dat
+Creating iterationTime.dat
 Creating the mechanicalModel
 Selecting mechanical law linearElastic
 Creating BCloopCorr.dat
@@ -62,17 +63,17 @@ setCellDisplacements: reading cellDisplacements
 Using machine learning to predict D field
 
 Json file location is: "../../machine_learning/ML_model/fdeep_model.json"
-Loading json ... done. elapsed time: 0.001655 s
-Building model ... done. elapsed time: 0.001808 s
-Running test 1 of 1 ... done. elapsed time: 0.000231 s
-Loading, constructing, testing of ../../machine_learning/ML_model/fdeep_model.json took 0.003980 s overall.
+Loading json ... done. elapsed time: 0.003321 s
+Building model ... done. elapsed time: 0.003040 s
+Running test 1 of 1 ... done. elapsed time: 0.000419 s
+Loading, constructing, testing of ../../machine_learning/ML_model/fdeep_model.json took 0.007237 s overall.
 Keras model loaded
 BC correction loop took 75 iterations
     The relative residual has converged
-    232, 9.94535e-10, 0, 0, 0
-Max epsilonEq = 6.33225e-06
-Max sigmaEq (von Mises stress) = 1.46129e+06
-ExecutionTime = 117.75 s  ClockTime = 118 s
+    227, 9.50815e-10, 0, 0, 0
+Max epsilonEq = 6.33728e-06
+Max sigmaEq (von Mises stress) = 1.46245e+06
+ExecutionTime = 151.99 s  ClockTime = 153 s
 
 Time = 2
 
@@ -83,17 +84,17 @@ Solving the momentum equation for D
 Using machine learning to predict D field
 
 Json file location is: "../../machine_learning/ML_model/fdeep_model.json"
-Loading json ... done. elapsed time: 0.001690 s
-Building model ... done. elapsed time: 0.001959 s
-Running test 1 of 1 ... done. elapsed time: 0.000156 s
-Loading, constructing, testing of ../../machine_learning/ML_model/fdeep_model.json took 0.004088 s overall.
+Loading json ... done. elapsed time: 0.003183 s
+Building model ... done. elapsed time: 0.003715 s
+Running test 1 of 1 ... done. elapsed time: 0.000196 s
+Loading, constructing, testing of ../../machine_learning/ML_model/fdeep_model.json took 0.007292 s overall.
 Keras model loaded
 BC correction loop took 75 iterations
     The relative residual has converged
-    222, 9.3641e-10, 0, 0, 0
-Max epsilonEq = 1.07879e-05
-Max sigmaEq (von Mises stress) = 2.48952e+06
-ExecutionTime = 230.98 s  ClockTime = 231 s
+    217, 9.4806e-10, 0, 0, 0
+Max epsilonEq = 1.0781e-05
+Max sigmaEq (von Mises stress) = 2.48791e+06
+ExecutionTime = 301.28 s  ClockTime = 302 s
 
 Time = 3
 
@@ -104,17 +105,17 @@ Solving the momentum equation for D
 Using machine learning to predict D field
 
 Json file location is: "../../machine_learning/ML_model/fdeep_model.json"
-Loading json ... done. elapsed time: 0.001363 s
-Building model ... done. elapsed time: 0.001607 s
-Running test 1 of 1 ... done. elapsed time: 0.000370 s
-Loading, constructing, testing of ../../machine_learning/ML_model/fdeep_model.json took 0.003614 s overall.
+Loading json ... done. elapsed time: 0.002534 s
+Building model ... done. elapsed time: 0.002218 s
+Running test 1 of 1 ... done. elapsed time: 0.000146 s
+Loading, constructing, testing of ../../machine_learning/ML_model/fdeep_model.json took 0.005087 s overall.
 Keras model loaded
 BC correction loop took 79 iterations
     The relative residual has converged
-    223, 9.42439e-10, 0, 0, 0
-Max epsilonEq = 4.99243e-05
-Max sigmaEq (von Mises stress) = 1.1521e+07
-ExecutionTime = 335.39 s  ClockTime = 336 s
+    216, 9.88856e-10, 0, 0, 0
+Max epsilonEq = 4.99316e-05
+Max sigmaEq (von Mises stress) = 1.15227e+07
+ExecutionTime = 450.76 s  ClockTime = 452 s
 
 Time = 4
 
@@ -125,17 +126,17 @@ Solving the momentum equation for D
 Using machine learning to predict D field
 
 Json file location is: "../../machine_learning/ML_model/fdeep_model.json"
-Loading json ... done. elapsed time: 0.001289 s
-Building model ... done. elapsed time: 0.001547 s
-Running test 1 of 1 ... done. elapsed time: 0.000090 s
-Loading, constructing, testing of ../../machine_learning/ML_model/fdeep_model.json took 0.003117 s overall.
+Loading json ... done. elapsed time: 0.001795 s
+Building model ... done. elapsed time: 0.003480 s
+Running test 1 of 1 ... done. elapsed time: 0.000335 s
+Loading, constructing, testing of ../../machine_learning/ML_model/fdeep_model.json took 0.005894 s overall.
 Keras model loaded
 BC correction loop took 76 iterations
     The relative residual has converged
-    221, 9.38669e-10, 0, 0, 0
-Max epsilonEq = 0.000117267
-Max sigmaEq (von Mises stress) = 2.70616e+07
-ExecutionTime = 431.8 s  ClockTime = 432 s
+    215, 9.68612e-10, 0, 0, 0
+Max epsilonEq = 0.000120298
+Max sigmaEq (von Mises stress) = 2.77611e+07
+ExecutionTime = 587.6 s  ClockTime = 588 s
 
 Time = 5
 
@@ -146,17 +147,17 @@ Solving the momentum equation for D
 Using machine learning to predict D field
 
 Json file location is: "../../machine_learning/ML_model/fdeep_model.json"
-Loading json ... done. elapsed time: 0.001285 s
-Building model ... done. elapsed time: 0.001641 s
-Running test 1 of 1 ... done. elapsed time: 0.000140 s
-Loading, constructing, testing of ../../machine_learning/ML_model/fdeep_model.json took 0.003256 s overall.
+Loading json ... done. elapsed time: 0.003096 s
+Building model ... done. elapsed time: 0.003388 s
+Running test 1 of 1 ... done. elapsed time: 0.000313 s
+Loading, constructing, testing of ../../machine_learning/ML_model/fdeep_model.json took 0.007060 s overall.
 Keras model loaded
-BC correction loop took 58 iterations
+BC correction loop took 55 iterations
     The relative residual has converged
-    206, 1.31397e-09, 9.71807e-11, 0, 0
-Max epsilonEq = 0.0106674
-Max sigmaEq (von Mises stress) = 2.4617e+09
-ExecutionTime = 512.12 s  ClockTime = 513 s
+    204, 1.19363e-09, 4.45198e-11, 0, 0
+Max epsilonEq = 0.0167141
+Max sigmaEq (von Mises stress) = 3.8571e+09
+ExecutionTime = 698.69 s  ClockTime = 700 s
 
 Time = 6
 
@@ -167,17 +168,17 @@ Solving the momentum equation for D
 Using machine learning to predict D field
 
 Json file location is: "../../machine_learning/ML_model/fdeep_model.json"
-Loading json ... done. elapsed time: 0.001390 s
-Building model ... done. elapsed time: 0.001566 s
-Running test 1 of 1 ... done. elapsed time: 0.000128 s
-Loading, constructing, testing of ../../machine_learning/ML_model/fdeep_model.json took 0.003333 s overall.
+Loading json ... done. elapsed time: 0.003262 s
+Building model ... done. elapsed time: 0.002118 s
+Running test 1 of 1 ... done. elapsed time: 0.000162 s
+Loading, constructing, testing of ../../machine_learning/ML_model/fdeep_model.json took 0.005721 s overall.
 Keras model loaded
-BC correction loop took 57 iterations
+BC correction loop took 55 iterations
     The relative residual has converged
-    198, 1.56767e-09, 7.80766e-11, 0, 0
-Max epsilonEq = 0.0204438
-Max sigmaEq (von Mises stress) = 4.7178e+09
-ExecutionTime = 582.3 s  ClockTime = 583 s
+    204, 1.22775e-09, 3.84734e-11, 0, 0
+Max epsilonEq = 0.0261649
+Max sigmaEq (von Mises stress) = 6.03807e+09
+ExecutionTime = 817.3 s  ClockTime = 818 s
 
 Time = 7
 
@@ -188,17 +189,17 @@ Solving the momentum equation for D
 Using machine learning to predict D field
 
 Json file location is: "../../machine_learning/ML_model/fdeep_model.json"
-Loading json ... done. elapsed time: 0.001372 s
-Building model ... done. elapsed time: 0.001570 s
-Running test 1 of 1 ... done. elapsed time: 0.000098 s
-Loading, constructing, testing of ../../machine_learning/ML_model/fdeep_model.json took 0.003231 s overall.
+Loading json ... done. elapsed time: 0.002037 s
+Building model ... done. elapsed time: 0.002026 s
+Running test 1 of 1 ... done. elapsed time: 0.000112 s
+Loading, constructing, testing of ../../machine_learning/ML_model/fdeep_model.json took 0.004320 s overall.
 Keras model loaded
 BC correction loop took 73 iterations
     The relative residual has converged
-    206, 1.08714e-09, 4.38471e-11, 0, 0
-Max epsilonEq = 9.61451e-05
-Max sigmaEq (von Mises stress) = 2.21873e+07
-ExecutionTime = 667.34 s  ClockTime = 668 s
+    205, 1.18112e-09, 4.89457e-11, 0, 0
+Max epsilonEq = 9.68196e-05
+Max sigmaEq (von Mises stress) = 2.2343e+07
+ExecutionTime = 951.69 s  ClockTime = 953 s
 
 Time = 8
 
@@ -209,17 +210,17 @@ Solving the momentum equation for D
 Using machine learning to predict D field
 
 Json file location is: "../../machine_learning/ML_model/fdeep_model.json"
-Loading json ... done. elapsed time: 0.001305 s
-Building model ... done. elapsed time: 0.001858 s
-Running test 1 of 1 ... done. elapsed time: 0.000116 s
-Loading, constructing, testing of ../../machine_learning/ML_model/fdeep_model.json took 0.003534 s overall.
+Loading json ... done. elapsed time: 0.001813 s
+Building model ... done. elapsed time: 0.002560 s
+Running test 1 of 1 ... done. elapsed time: 0.000159 s
+Loading, constructing, testing of ../../machine_learning/ML_model/fdeep_model.json took 0.004706 s overall.
 Keras model loaded
 BC correction loop took 73 iterations
     The relative residual has converged
-    207, 9.97217e-10, 0, 0, 0
-Max epsilonEq = 9.27984e-05
-Max sigmaEq (von Mises stress) = 2.1415e+07
-ExecutionTime = 754.18 s  ClockTime = 755 s
+    207, 9.0111e-10, 0, 0, 0
+Max epsilonEq = 9.45154e-05
+Max sigmaEq (von Mises stress) = 2.18113e+07
+ExecutionTime = 1083.05 s  ClockTime = 1084 s
 
 Time = 9
 
@@ -230,17 +231,17 @@ Solving the momentum equation for D
 Using machine learning to predict D field
 
 Json file location is: "../../machine_learning/ML_model/fdeep_model.json"
-Loading json ... done. elapsed time: 0.001285 s
-Building model ... done. elapsed time: 0.001480 s
-Running test 1 of 1 ... done. elapsed time: 0.000095 s
-Loading, constructing, testing of ../../machine_learning/ML_model/fdeep_model.json took 0.003042 s overall.
+Loading json ... done. elapsed time: 0.003346 s
+Building model ... done. elapsed time: 0.002599 s
+Running test 1 of 1 ... done. elapsed time: 0.000151 s
+Loading, constructing, testing of ../../machine_learning/ML_model/fdeep_model.json took 0.006280 s overall.
 Keras model loaded
 BC correction loop took 72 iterations
     The relative residual has converged
-    212, 9.75809e-10, 0, 0, 0
-Max epsilonEq = 6.1773e-05
-Max sigmaEq (von Mises stress) = 1.42553e+07
-ExecutionTime = 847.62 s  ClockTime = 848 s
+    210, 9.47361e-10, 0, 0, 0
+Max epsilonEq = 6.42235e-05
+Max sigmaEq (von Mises stress) = 1.48208e+07
+ExecutionTime = 1229.21 s  ClockTime = 1230 s
 
 Time = 10
 
@@ -251,17 +252,17 @@ Solving the momentum equation for D
 Using machine learning to predict D field
 
 Json file location is: "../../machine_learning/ML_model/fdeep_model.json"
-Loading json ... done. elapsed time: 0.001512 s
-Building model ... done. elapsed time: 0.001592 s
-Running test 1 of 1 ... done. elapsed time: 0.000137 s
-Loading, constructing, testing of ../../machine_learning/ML_model/fdeep_model.json took 0.003464 s overall.
+Loading json ... done. elapsed time: 0.001758 s
+Building model ... done. elapsed time: 0.003174 s
+Running test 1 of 1 ... done. elapsed time: 0.000130 s
+Loading, constructing, testing of ../../machine_learning/ML_model/fdeep_model.json took 0.005211 s overall.
 Keras model loaded
 BC correction loop took 75 iterations
     The relative residual has converged
-    207, 9.55269e-10, 0, 0, 0
-Max epsilonEq = 7.44389e-05
-Max sigmaEq (von Mises stress) = 1.71782e+07
-ExecutionTime = 939.06 s  ClockTime = 940 s
+    210, 9.99182e-10, 0, 0, 0
+Max epsilonEq = 7.44717e-05
+Max sigmaEq (von Mises stress) = 1.71858e+07
+ExecutionTime = 1378.83 s  ClockTime = 1380 s
 
 The momentum equation converged in all time-steps
 
