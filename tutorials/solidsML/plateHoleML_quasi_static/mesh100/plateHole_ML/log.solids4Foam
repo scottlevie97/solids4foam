@@ -7,10 +7,10 @@
 \*---------------------------------------------------------------------------*/
 Build  : 4.1-70b064d0f326
 Exec   : solids4Foam
-Date   : Nov 17 2022
-Time   : 14:04:56
+Date   : Nov 23 2022
+Time   : 14:02:10
 Host   : "Levie-Laptop"
-PID    : 5607
+PID    : 16809
 CtrlDict : "/home/scottlevie/foam/scottlevie-4.1/solids4foam/tutorials/solidsML/plateHoleML_quasi_static/mesh100/plateHole_ML/system/controlDict"
 Case   : /home/scottlevie/foam/scottlevie-4.1/solids4foam/tutorials/solidsML/plateHoleML_quasi_static/mesh100/plateHole_ML
 nProcs : 1
@@ -63,17 +63,18 @@ setCellDisplacements: reading cellDisplacements
 Using machine learning to predict D field
 
 Json file location is: "../../machine_learning/ML_model/fdeep_model.json"
-Loading json ... done. elapsed time: 0.001710 s
-Building model ... done. elapsed time: 0.001668 s
-Running test 1 of 1 ... done. elapsed time: 0.000228 s
-Loading, constructing, testing of ../../machine_learning/ML_model/fdeep_model.json took 0.003808 s overall.
+Loading json ... done. elapsed time: 0.001411 s
+Building model ... done. elapsed time: 0.001404 s
+Running test 1 of 1 ... done. elapsed time: 0.000154 s
+Loading, constructing, testing of ../../machine_learning/ML_model/fdeep_model.json took 0.003145 s overall.
 Keras model loaded
-BC correction loop took 27 iterations
+BC correction loop took 29 iterations
+    100, 2.94699e-06, 4.18463e-10, 0, 0
     The relative residual has converged
-    114, 8.26424e-07, 8.97751e-11, 0, 0
-Max epsilonEq = 0.424005
-Max sigmaEq (von Mises stress) = 9.78474e+10
-ExecutionTime = 41.25 s  ClockTime = 41 s
+    121, 6.19081e-07, 9.58874e-11, 0, 0
+Max epsilonEq = 0.76593
+Max sigmaEq (von Mises stress) = 1.76753e+11
+ExecutionTime = 38.95 s  ClockTime = 40 s
 
 The momentum equation converged in all time-steps
 

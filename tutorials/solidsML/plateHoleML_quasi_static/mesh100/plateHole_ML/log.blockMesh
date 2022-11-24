@@ -7,10 +7,10 @@
 \*---------------------------------------------------------------------------*/
 Build  : 4.1-70b064d0f326
 Exec   : blockMesh
-Date   : Nov 17 2022
-Time   : 14:04:55
+Date   : Nov 23 2022
+Time   : 14:02:09
 Host   : "Levie-Laptop"
-PID    : 5597
+PID    : 16805
 CtrlDict : "/home/scottlevie/foam/scottlevie-4.1/solids4foam/tutorials/solidsML/plateHoleML_quasi_static/mesh100/plateHole_ML/system/controlDict"
 Case   : /home/scottlevie/foam/scottlevie-4.1/solids4foam/tutorials/solidsML/plateHoleML_quasi_static/mesh100/plateHole_ML
 nProcs : 1
