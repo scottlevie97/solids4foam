@@ -1,7 +1,0 @@
-#!/bin/bash
-
-echo "Are you sure you want to remove these files?"
-
-\rm -rf  fdeep_model.json fdeepTrial.h5 data.csv scalingData.csv dataScaled.csv *pkl 
-
-
