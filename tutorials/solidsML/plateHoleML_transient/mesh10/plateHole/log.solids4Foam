@@ -1,0 +1,171 @@
+/*---------------------------------------------------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | foam-extend: Open Source CFD                    |
+|  \\    /   O peration     | Version:     4.1                                |
+|   \\  /    A nd           | Web:         http://www.foam-extend.org         |
+|    \\/     M anipulation  | For copyright notice see file Copyright         |
+\*---------------------------------------------------------------------------*/
+Build  : 4.1-70b064d0f326
+Exec   : solids4Foam
+Date   : Nov 17 2022
+Time   : 10:18:25
+Host   : "Levie-Laptop"
+PID    : 9621
+CtrlDict : "/home/scottlevie/foam/scottlevie-4.1/run/plateHoleML/mesh10/plateHole/system/controlDict"
+Case   : /home/scottlevie/foam/scottlevie-4.1/run/plateHoleML/mesh10/plateHole
+nProcs : 1
+sigFpe : Enabling floating point exception trapping (FOAM_SIGFPE).
+allowSystemOperations : Disallowing user-supplied system call operations
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+Create time
+
+/*---------------------------------------------------------------------------*\
+|    For further information on the solids4Foam toolbox implementations,      |
+|    please see the following publications:                                   |
+|                                                                             |
+|    P. Cardiff, A Karac, P. De Jaeger, H. Jasak, J. Nagy, A. Ivankovic,      |
+|    Z. Tukovic: An open-source finite volume toolbox for solid mechanics and |
+|    fluid-solid interaction simulations. arXiv:1808.10736v2, 2018, available |
+|    at https://arxiv.org/abs/1808.10736.                                     |
+|                                                                             |
+|    Z. Tukovic, A. Karac, P. Cardiff, H. Jasak, A. Ivankovic: OpenFOAM       |
+|    finite volume solver for fluid-solid interaction.  Transactions of       |
+|    Famena, 42 (3), pp. 1-31, 2018, 10.21278/TOF.42301.                      |
+\*---------------------------------------------------------------------------*/
+
+Selecting physicsModel solidModel
+Selecting solidModel linearGeometryTotalDisplacementML
+Selecting dynamicFvMesh staticFvMesh
+Symmetry boundary condition with non-orthogonal correction
+Creating solidTraction boundary condition
+    traction is time-varying
+Symmetry boundary condition with non-orthogonal correction
+Creating solidTraction boundary condition
+Creating solidTraction boundary condition
+    under-relaxation method: fixed
+Creating residual.dat
+Creating iterationTime.dat
+Creating the mechanicalModel
+Selecting mechanical law linearElastic
+Creating BCloopCorr.dat
+Creating forceDisp1 function object.
+Creating pointDisp function object
+    region = region0
+    distance from specified point is 0
+Time = 1
+
+Evolving solid solver
+Solving the momentum equation for D
+setCellDisplacements: reading cellDisplacements
+    Corr, res, relRes, matRes, iters
+    The relative residual has converged
+    298, 9.66799e-10, 0, 0, 0
+Max epsilonEq = 1.16083e-06
+Max sigmaEq (von Mises stress) = 267884
+ExecutionTime = 0.6 s  ClockTime = 0 s
+
+Time = 2
+
+Evolving solid solver
+Solving the momentum equation for D
+    Corr, res, relRes, matRes, iters
+    The relative residual has converged
+    284, 9.75058e-10, 0, 0, 0
+Max epsilonEq = 2.32166e-06
+Max sigmaEq (von Mises stress) = 535768
+ExecutionTime = 1.19 s  ClockTime = 1 s
+
+Time = 3
+
+Evolving solid solver
+Solving the momentum equation for D
+    Corr, res, relRes, matRes, iters
+    The relative residual has converged
+    276, 9.76986e-10, 0, 0, 0
+Max epsilonEq = 3.48249e-06
+Max sigmaEq (von Mises stress) = 803653
+ExecutionTime = 1.73 s  ClockTime = 1 s
+
+Time = 4
+
+Evolving solid solver
+Solving the momentum equation for D
+    Corr, res, relRes, matRes, iters
+    The relative residual has converged
+    271, 9.62192e-10, 0, 0, 0
+Max epsilonEq = 4.64333e-06
+Max sigmaEq (von Mises stress) = 1.07154e+06
+ExecutionTime = 2.27 s  ClockTime = 2 s
+
+Time = 5
+
+Evolving solid solver
+Solving the momentum equation for D
+    Corr, res, relRes, matRes, iters
+    The relative residual has converged
+    267, 9.85626e-10, 0, 0, 0
+Max epsilonEq = 5.80416e-06
+Max sigmaEq (von Mises stress) = 1.33942e+06
+ExecutionTime = 2.77 s  ClockTime = 2 s
+
+Time = 6
+
+Evolving solid solver
+Solving the momentum equation for D
+    Corr, res, relRes, matRes, iters
+    The relative residual has converged
+    263, 9.63933e-10, 0, 0, 0
+Max epsilonEq = 6.96499e-06
+Max sigmaEq (von Mises stress) = 1.60731e+06
+ExecutionTime = 3.28 s  ClockTime = 3 s
+
+Time = 7
+
+Evolving solid solver
+Solving the momentum equation for D
+    Corr, res, relRes, matRes, iters
+    The relative residual has converged
+    260, 9.57319e-10, 0, 0, 0
+Max epsilonEq = 8.12582e-06
+Max sigmaEq (von Mises stress) = 1.87519e+06
+ExecutionTime = 3.73 s  ClockTime = 3 s
+
+Time = 8
+
+Evolving solid solver
+Solving the momentum equation for D
+    Corr, res, relRes, matRes, iters
+    The relative residual has converged
+    256, 9.71257e-10, 0, 0, 0
+Max epsilonEq = 9.28665e-06
+Max sigmaEq (von Mises stress) = 2.14307e+06
+ExecutionTime = 4.2 s  ClockTime = 4 s
+
+Time = 9
+
+Evolving solid solver
+Solving the momentum equation for D
+    Corr, res, relRes, matRes, iters
+    The relative residual has converged
+    255, 9.61499e-10, 0, 0, 0
+Max epsilonEq = 1.04475e-05
+Max sigmaEq (von Mises stress) = 2.41096e+06
+ExecutionTime = 4.67 s  ClockTime = 4 s
+
+Time = 10
+
+Evolving solid solver
+Solving the momentum equation for D
+    Corr, res, relRes, matRes, iters
+    The relative residual has converged
+    253, 9.56703e-10, 0, 0, 0
+Max epsilonEq = 1.16083e-05
+Max sigmaEq (von Mises stress) = 2.67884e+06
+ExecutionTime = 5.12 s  ClockTime = 5 s
+
+The momentum equation converged in all time-steps
+
+
+End
+
