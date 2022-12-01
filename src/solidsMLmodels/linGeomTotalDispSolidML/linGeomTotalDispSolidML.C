@@ -78,7 +78,9 @@ namespace Foam
               machineLearning_(
                   solidModelDict().lookupOrDefault<Switch>("machineLearning", Switch(false))),
               machinePredictorIter_(
-                  solidModelDict().lookupOrDefault<scalar>("iterationToApplyMachineLearningPredictor", 11)),
+                  solidModelDict().lookupOrDefault<List<scalar>>("iterationToApplyMachineLearningPredictor", {20})),
+              machineLearningInputSize_(
+                  solidModelDict().lookupOrDefault<scalar>("machineLearningInputSize", 0)),
               jsonFile_(
                   solidModelDict().lookupOrDefault<fileName>("jsonFile", "jsonFile")),
               convergedCase_(
@@ -91,8 +93,10 @@ namespace Foam
               BCloopCorrFile_(),
               writeDisplacementField_(
                   solidModelDict().lookupOrDefault<Switch>("writeDisplacementField", Switch(false))),
-              writeDisplacementLimit_(
-                  solidModelDict().lookupOrDefault<scalar>("writeDisplacementLimit", 20))
+              writeDisplacementStart_(
+                  solidModelDict().lookupOrDefault<scalar>("writeDisplacementStart", 0)),
+              writeDisplacementEnd_(
+                  solidModelDict().lookupOrDefault<scalar>("writeDisplacementEnd", 20))
         {
             DisRequired();
 
@@ -140,7 +144,7 @@ namespace Foam
                     Dsize = Dsize + 1;
                 }
 
-                prevCellD_.setSize(machinePredictorIter_);
+                prevCellD_.setSize(machineLearningInputSize_);
                 forAll(prevCellD_, iterI)
                 {
                     prevCellD_.set(
@@ -170,6 +174,9 @@ namespace Foam
         bool linGeomTotalDispSolidML::evolve()
         {
             Info << "Evolving solid solver" << endl;
+
+            Info << "predicting at" << machinePredictorIter_ << endl;
+            Info << "size: " <<  machineLearningInputSize_ << endl;
 
             if (predictor_)
             {
@@ -209,6 +216,7 @@ namespace Foam
                         {
                             updateD_testConverged();
                             //    updateSigma_testConverged();    // Doesnt make a difference due to correction
+                            BoundaryTractionLoop();
                         }
 
                         if (machineLearning_)
@@ -301,7 +309,8 @@ namespace Foam
                     ++iCorr < nCorr());
 
                 // Write final iteration displacement
-                writeDisplacementIteration(iCorr);
+                writeDisplacementIteration(iCorr, true);
+                writeDisplacementIteration(iCorr, false);
 
                 // Interpolate cell displacements to vertices
                 mechanical().interpolate(D(), pointD());
@@ -422,7 +431,7 @@ namespace Foam
 
             vectorIOField convergedD(
                 IOobject(
-                    "ConvergedSolidsCellD",                      // name of file on disk
+                    "convergedD_cells",                      // name of file on disk
                     convergedCase_ + "/" + runTime().timeName(), // where it is located (read from 0 at the start)
                     // runTime.constant(), // where it is located
                     mesh(), // object registry
@@ -486,10 +495,10 @@ namespace Foam
             {
                 D().storePrevIter();
 
-                mechanical().correct(sigma());
-                D().correctBoundaryConditions();
+                mechanical().correct(sigma());              // Calculates sigma using grad D
+                D().correctBoundaryConditions();            // Applies BCs to boundaries? (changes D)
 
-                mechanical().grad(D(), gradD());
+                mechanical().grad(D(), gradD());            // Calculates new grad D
 
                 residual =
                     max(
@@ -516,12 +525,22 @@ namespace Foam
             BCloopCorrFile_() << runTime().timeName() << tab << residual << tab << BCloopCorr << nl;
         }
 
-        void linGeomTotalDispSolidML::writeDisplacementIteration(int iteration)
+        void linGeomTotalDispSolidML::writeDisplacementIteration(int iteration, bool converged)
         {
             // Write D field for each iteration
             {
-                const fileName fName(
-                    "solidsCellD_iteration" + Foam::name(iteration));
+
+                fileName fName;
+
+                if (converged)
+                {
+                    fName = "convergedD_cells";                
+                } 
+                else if (!converged)
+                {
+                    fName = "solidsCellD_iteration" + Foam::name(iteration);
+                }           
+
 
                 vectorIOField dataToWrite(
                     IOobject(
@@ -533,6 +552,24 @@ namespace Foam
                     D());
                 dataToWrite.write();
             }
+        }
+
+        void linGeomTotalDispSolidML::writePredictedDField()
+        {
+            volVectorField D_predicted = D()*1;
+
+            volVectorField D_predicted_write
+            (
+
+                IOobject(
+                    "D_predicted",
+                    runTime().timeName(),
+                    runTime(),
+                    IOobject::NO_READ,
+                    IOobject::AUTO_WRITE),
+                D_predicted
+            );
+            D_predicted_write.write();
         }
 
         // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

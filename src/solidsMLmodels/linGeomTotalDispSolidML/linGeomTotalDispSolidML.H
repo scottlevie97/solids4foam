@@ -227,7 +227,10 @@ namespace Foam
             virtual void BoundaryTractionLoop();
 
             // - Write Displacement for each iteration
-            virtual void writeDisplacementIteration(int iteration);
+            virtual void writeDisplacementIteration(int iteration, bool converged);
+
+            // - Write Displacement for prediction iteration
+            virtual void writePredictedDField();
 
             // // - write residual field
             // virtual void writeResidualField(int iCorr);
