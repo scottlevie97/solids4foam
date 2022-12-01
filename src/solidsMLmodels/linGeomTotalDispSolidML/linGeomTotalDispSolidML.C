@@ -78,9 +78,7 @@ namespace Foam
               machineLearning_(
                   solidModelDict().lookupOrDefault<Switch>("machineLearning", Switch(false))),
               machinePredictorIter_(
-                  solidModelDict().lookupOrDefault<List<scalar>>("iterationToApplyMachineLearningPredictor", {20})),
-              machineLearningInputSize_(
-                  solidModelDict().lookupOrDefault<scalar>("machineLearningInputSize", 0)),
+                  solidModelDict().lookupOrDefault<scalar>("iterationToApplyMachineLearningPredictor", 11)),
               jsonFile_(
                   solidModelDict().lookupOrDefault<fileName>("jsonFile", "jsonFile")),
               convergedCase_(
@@ -93,10 +91,8 @@ namespace Foam
               BCloopCorrFile_(),
               writeDisplacementField_(
                   solidModelDict().lookupOrDefault<Switch>("writeDisplacementField", Switch(false))),
-              writeDisplacementStart_(
-                  solidModelDict().lookupOrDefault<scalar>("writeDisplacementStart", 0)),
-              writeDisplacementEnd_(
-                  solidModelDict().lookupOrDefault<scalar>("writeDisplacementEnd", 20))
+              writeDisplacementLimit_(
+                  solidModelDict().lookupOrDefault<scalar>("writeDisplacementLimit", 20))
         {
             DisRequired();
 
@@ -144,7 +140,7 @@ namespace Foam
                     Dsize = Dsize + 1;
                 }
 
-                prevCellD_.setSize(machineLearningInputSize_);
+                prevCellD_.setSize(machinePredictorIter_);
                 forAll(prevCellD_, iterI)
                 {
                     prevCellD_.set(
@@ -174,9 +170,6 @@ namespace Foam
         bool linGeomTotalDispSolidML::evolve()
         {
             Info << "Evolving solid solver" << endl;
-
-            Info << "predicting at" << machinePredictorIter_ << endl;
-            Info << "size: " <<  machineLearningInputSize_ << endl;
 
             if (predictor_)
             {
@@ -230,12 +223,7 @@ namespace Foam
 
                     // Linear momentum equation total displacement form
                     fvVectorMatrix DEqn(
-                        rho() * fvm::d2dt2(D()) 
-                        == fvm::laplacian(impKf_, D(), "laplacian(DD,D)") 
-                        - fvc::laplacian(impKf_, D(), "laplacian(DD,D)") 
-                        + fvc::div(sigma(), "div(sigma)") + rho() * g() 
-                        + stabilisation().stabilisation(D(), gradD(), impK_));
-
+                        rho() * fvm::d2dt2(D()) == fvm::laplacian(impKf_, D(), "laplacian(DD,D)") - fvc::laplacian(impKf_, D(), "laplacian(DD,D)") + fvc::div(sigma(), "div(sigma)") + rho() * g() + stabilisation().stabilisation(D(), gradD(), impK_));
 
                     // Under-relaxation the linear system
                     DEqn.relax();
@@ -251,13 +239,11 @@ namespace Foam
                     // Solve the linear system
                     solverPerfD = DEqn.solve();
 
-
-
                     // Relax fields when not predicting
-                    if(!machineLearning_)
+                    if (!machineLearning_)
                     {
                         // Fixed or adaptive field under-relaxation
-                        relaxField(D(), iCorr); 
+                        relaxField(D(), iCorr);
                     }
                     else if (machineLearning_ && (iCorr != machinePredictorIter_))
                     {
@@ -293,7 +279,7 @@ namespace Foam
                     // Write D field for each iteration
                     if (writeDisplacementField_ && (iCorr < writeDisplacementLimit_))
                     {
-                        writeDisplacementIteration(iCorr);
+                        writeDisplacementIteration(iCorr, false);
                     }
                 } while (
                     !converged(
@@ -310,7 +296,6 @@ namespace Foam
 
                 // Write final iteration displacement
                 writeDisplacementIteration(iCorr, true);
-                writeDisplacementIteration(iCorr, false);
 
                 // Interpolate cell displacements to vertices
                 mechanical().interpolate(D(), pointD());
@@ -431,7 +416,7 @@ namespace Foam
 
             vectorIOField convergedD(
                 IOobject(
-                    "convergedD_cells",                      // name of file on disk
+                    "convergedD_cells",                          // name of file on disk
                     convergedCase_ + "/" + runTime().timeName(), // where it is located (read from 0 at the start)
                     // runTime.constant(), // where it is located
                     mesh(), // object registry
@@ -495,10 +480,10 @@ namespace Foam
             {
                 D().storePrevIter();
 
-                mechanical().correct(sigma());              // Calculates sigma using grad D
-                D().correctBoundaryConditions();            // Applies BCs to boundaries? (changes D)
+                mechanical().correct(sigma());   // Calculates sigma using grad D
+                D().correctBoundaryConditions(); // Applies BCs to boundaries? (changes D)
 
-                mechanical().grad(D(), gradD());            // Calculates new grad D
+                mechanical().grad(D(), gradD()); // Calculates new grad D
 
                 residual =
                     max(
@@ -534,13 +519,12 @@ namespace Foam
 
                 if (converged)
                 {
-                    fName = "convergedD_cells";                
-                } 
+                    fName = "convergedD_cells";
+                }
                 else if (!converged)
                 {
                     fName = "solidsCellD_iteration" + Foam::name(iteration);
-                }           
-
+                }
 
                 vectorIOField dataToWrite(
                     IOobject(
@@ -556,10 +540,9 @@ namespace Foam
 
         void linGeomTotalDispSolidML::writePredictedDField()
         {
-            volVectorField D_predicted = D()*1;
+            volVectorField D_predicted = D() * 1;
 
-            volVectorField D_predicted_write
-            (
+            volVectorField D_predicted_write(
 
                 IOobject(
                     "D_predicted",
@@ -567,8 +550,7 @@ namespace Foam
                     runTime(),
                     IOobject::NO_READ,
                     IOobject::AUTO_WRITE),
-                D_predicted
-            );
+                D_predicted);
             D_predicted_write.write();
         }
 
