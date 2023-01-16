@@ -6,93 +6,118 @@ sort: 4
 
 ---
 
-## Case overview
+## Tutorial Aims
 
-This case consists of a flow pulse moving in an elastic thick tube. It demonstrates different formulations and models available in solids4foam for fluid-solid interaction (FSI). A schematic of the case is shown in the figure below.
+- Demonstrate the solution of an internal flow fluid-solid interaction problem;
+- Demonstrate the fluid-solid interaction coupling approaches available in solids4foam;
+- Provide insight into the relative performance of the different coupling approaches for internal flows;
+- Examine the effect of time-step on the performance of the coupling approaches.
+
+
+## Case Overview
+
+This case consists of a pressure pulse applied in a thick-walled elastic tube (Figure 1).
 
 ![](images/3dTube.png)
 
-The fluid is assumed incompressible and Newtonian, with a density of 1000.0 kg/m3 and kinematic viscosity 3e-6 m2/s, flowing due to a pressure wave, with peak 1333.3 Pa, applied at the tube inlet for a duration of 3e-3 s.
+**Figure 1: Wave propagation in an elastic pipe**
 
-The tube wall is assumed an isotropic elastic body under the small-strain regime, modelled with Hooke's law; this is for consistency with the original publication that proposed this benchmark. The density is 1200.0 kg/m3, Young's modulus is 300 kPa, and  Poisson's ratio is 0.3.
+The fluid is assumed incompressible, Newtonian and isothermal, with a density of 1000.0 kg/m3 and kinematic viscosity of 3e-6 m2/s. A pressure wave, with a peak of 1333.3 Pa, is applied at the tube inlet for a duration of 3e-3 s. The outlet pressure is held at 0 Pa throughout.
 
-The case demonstrates a situation where the coupling between the fluid and the solid is strong. This strong coupling is caused by the closeness of the fluid and solid densities. Rigorously, this situation occurs when the ratio 'solid density/fluid density' is near 1.0. When this situation occurs, and you are using a *partitioned strategy* to solve the FSI coupling, i.e. where the fluid and solid sub-problems are solved separately as is the case in solids4foam, the so-called 'added-mass operator' renders the problem difficult to solve numerically due to numerical instabilities.
+The tube wall is assumed an isotropic elastic body under the small-strain regime, modelled with Hooke's law, for consistency with the original publication that proposed this benchmark. The density is 1200.0 kg/m3, Young's modulus is 300 kPa, and Poisson's ratio is 0.3.
 
-The solution to improve the convergence is to apply a coupling algorithm that stabilises the solution. The typical strongly-coupled Dirichlet-Neumann
-coupling algorithm is of the form:
+The case demonstrates a strong coupling between the fluid and the solid due to the high fluid-to-solid density ratio. When using a partitioned solution approach (as in solids4foam), the so-called 'added-mass operator' makes the problem difficult to solve due to numerical instabilities.
 
-```pseudocode
-for all time-steps
-    do
-        solve fluid domain
-        pass fluid interface forces to the solid interface
-        solve solid domain
-        pass solid interface velocities to the fluid
-        interface using under-relaxation
-        update the fluid mesh
-    while not converged
-end
-```
+Currently, in solids4foam, there are two classes of approaches for partitioned FSI coupling:
 
-For this tutorial, you can use two approaches that are currently implemented in solids4foam, independent of the OpenFOAM versions you are using, and a third approach if you are using foam-extend-4.1.
+- **Dirichlet-Neumann coupling**, where a Dirichlet condition is applied to the fluid velocity and Neumann conditions to the fluid pressure and solid displacement. This approach **does not** require modification of the underlying fluid solver; see [Tuković Ž, Karač A, Cardiff P, Jasak H, Ivanković A, 2018, OpenFOAM finite volume solver for fluid–solid interaction. Trans FAMENA, 42(3):1–31.10.21278/TOF.42301](https://hrcak.srce.hr/206941);
 
-The first two approaches use the typical *Dirichlet-Neumann formulation* where the condition on the FSI interface is modelled as: the solid receives the traction force from the flow  (Neumann boundary condition), and the fluid domain receives the velocity of the wall (Dirichlet boundary condition). The difference between the two approaches lies in the fluid model:
+- **Robin-Neumann coupling**, where a Dirichlet condition is applied to the fluid velocity, a Robin condition to the fluid pressure, and a Neumann condition to the solid displacement. This approach **does** require modification of the underlying fluid solver, and hence it cannot be considered a *black-box* coupling approach; see [Tuković Ž, Bukač M, Cardiff P, Jasak H, Ivanković A, 2018, Added mass partitioned fluid–structure interaction solver based on a robin boundary condition for pressure. In: OpenFOAM selected papers of the 11th workshop. Springer, Berlin, pp 1–23](https://doi.org/10.1007/978-3-319-60846-4_1).
 
-1) Using a purely incompressible formulation for the fluid flow: we use the pimpleFluid model, the 'newMovingWallVelocity' BC in the 'wall' boundary for the flow velocity, and the 'zeroGradient' BC on the 'wall' boundary for the pressure.  This configuration is the typical way of handling FSI problems but may be unstable even when iterating several times over the fluid and solid solution. In this approach, we have two options to accelerate the convergence of the FSI iterations:
+For each of these two classes of approach, we can employ different methods to accelerate the FSI iteration loop convergence; within solids4foam, we can use:
 
-(a) Aitken's dynamic relaxation, and;
-(b) the IQN-ILS algorithm. 
-    
-Here, we refer to these approaches as "Dirichlet-Neumann Formulations" for reference.
+- Aitken's dynamic relaxation;
 
-2) Using a 'weakly compressible' fluid model: the convergence of the FSI coupling can be improved by using a compressible law to model the fluid and controlling the compressibility by the bulk modulus. Incompressible behaviour is approached as the bulk modulus tends to infinity. We can use the 'sonicLiquidFluid' fluid model in solids4foam to achieve this compressible behaviour and the same BCs as used in approaches (1). Either Aitken's dynamic relaxation or the IQN-ILS algorithms can be used for the FSI coupling, but as we will see below, the convergence improvement when using this weakly compressible model is impressive. In the tutorial, we employed a bulk modulus for the fluid of 1 MPa.
+- the IQN-ILS algorithm of [Joris Degroote, Robby Haelterman, Sebastiaan Annerel, Peter Bruggeman, Jan Vierendeels, Performance of partitioned procedures in fluid–structure interaction, Computers & Structures, 88, 7–8, 2010, 10.1016/j.compstruc.2009.12.006](https://www.sciencedirect.com/science/article/abs/pii/S0045794909003022).
 
-More information on this weakly compressible law and its effect on FSI computations can be found at: [E. Tandis and A. Ashrafizadeh, “A numerical study on the fluid compressibility effects in strongly coupled fluid–solid interaction problems,” Engineering with Computers, 2019, doi: 10.1007/s00366-019-00880-4.](https://doi.org/10.1007/s00366-019-00880-4)
+As well as using these acceleration algorithms, we can also use a **weakly compressible** fluid model rather than the standard **fully incompressible** model; for FSI, weakly compressible fluid models how been shown to improve convergence, for example, see [E. Tandis and A. Ashrafizadeh, “A numerical study on the fluid compressibility effects in strongly coupled fluid–solid interaction problems,” Engineering with Computers, 2019, doi: 10.1007/s00366-019-00880-4.](https://doi.org/10.1007/s00366-019-00880-4).
 
-We label this alternative the "weakly compressible formulation".
+In this tutorial, we will compare six variants of the approaches above:
 
-3) The third alternative, which is currently only available when using solids4foam with foam-extend-4.1, uses a *Robin-Neumann formulation*. This FSI formulation aims to account for the added-mass operator directly. It leads to a Robin boundary condition for the fluid pressure field on the FSI interface. Support for it is implemented in the `pimpleFluid` model, but we also need to apply special boundary conditions: they are the `elasticWallPressure` for the fluid pressure field and `elasticWallVelocity` for the fluid velocity field. 
+1. **Dirichlet-Neumann formulation with Aitken's acceleration and an incompressible fluid model**: We use the `pimpleFluid` fluid model.
+2. **Dirichlet-Neumann formulation with IQNILS acceleration and an incompressible fluid model**: We use the `pimpleFluid` fluid model.
+3. **Dirichlet-Neumann formulation with Aitken's acceleration and a weakly compressible fluid model**: We use the `sonicLiquidFluid` fluid model.
+4. **Dirichlet-Neumann formulation with IQNILS acceleration and a weakly compressible fluid model**: We use the `sonicLiquidFluid` fluid model.
+5. **Robin-Neumann formulation with an incompressible fluid**: Support for this approach is implemented in the `pimpleFluid` model, where we apply special interface boundary conditions: `elasticWallPressure` for the fluid pressure field; and `elasticWallVelocity` for the fluid velocity field. 
+6. **Dirichlet-Neumann formulation with Aitken's acceleration and an incompressible fluid model using preCICE**: This approach is the same as approach 1, except the [preCICE](http://precice.org) coupling implementation is used. preCICE is an open-source coupling library for partitioned multi-physics simulations. In this case, `solids4Foam` is used as the solid solver, and standard `pimpleFoam` is used as the fluid solver (as opposed to solids4foam's `pimpleFluid` fluid model). Due to implementation differences, this preCICE IQNILS approach may perform differently than the built-in solids4foam approach.
 
-We refer to this approach as the 'Robin-Neumann formulation'.
+In all approaches, the solid domain setup is exactly the same, where an incremental small strain formulation is used (the `linearGeometry` solid model). One-quarter of the tube's cross-section is considered, although the case could actually be modelled as 2-D axisymmetric. The test is run for 0.02 s. A relatively tight FSI loop tolerance of 1e-6 is used for all approaches based on the interface motion. For approach 6 (preCICE), the relative displacement tolerance was set to 1e-6, and the relative force tolerance was set to 1e-3.
 
-In all three approaches, the solid domain setup is exactly the same. The momentum and continuity equations are solved for the fluid flow and the momentum equation for the solid. In this case, the solid is solved using an updated Lagrangian finite strain formulation. Due to symmetry, only a quarter of the tube's cross-section is considered, although the case could actually be modelled as 2-D taxi-symmetric. The test is run for 0.02 s.
+In all cases, the first-order Euler time scheme is used for the solid and fluid.
 
 ---
 
-## Running the case
+## Running the Case
 
-The tutorial case can be run using the included `Allrun` scripts: `Allrun.pimpleFluid` for approaches 1 and 3, i.e.`> ./Allrun.pimpleFluid`, and `> ./Allrun.sonicLiquidFluid` for approach 2. These scripts update the case with links to the correct files to be used by each approach.
+For approaches 1 to 4, the tutorial case is located at `solids4foam/tutorials/fluidSolidInteraction/3dTube`. The case can be run using the included `Allrun` scripts: `Allrun.pimpleFluid` for approaches 1 and 2, i.e.`./Allrun.pimpleFluid`, and `./Allrun.sonicLiquidFluid` for approaches 3 and 4. These scripts update the case with links to the correct files to be used by each approach. The acceleration algorithm, Aitken's or IQNILS, is specified in the `constant/fsiProperties` file. 
 
-Additionally, if you  test approach 1, you can use the Aitken or IQN-ILS coupling algorithm, which should be changed in the `constant/fsiProperties` file
-Before running the script. 
+For approach 5 (Robin-Neumann formulation), you should change the boundary conditions in the `0/fluid/p` and `0/fluid/U` files to the `elastic*` versions; currently, the Robin approach is only available in foam-extend-4.1.
 
-If running approach 3 (Robin-Neumann formulation), you should change the boundary conditions in the `0/fluid/p` and `0/fluid/U` files
-to the `elastic*` versions that are commented in those files. 
+The tutorial case for approach 6, which uses preCICE, is located at `solids4foam/tutorials/fluidSolidInteraction-preCICE/3dTube`; once again, the `Allrun` script runs the case.
 
 ```tip
-Remember that a tutorial case can be cleaned and reset using the included `Allrun` script, i.e. `> ./Allclean`.
+Remember that a tutorial case can be cleaned and reset using the included `Allrun` script, i.e. `./Allclean`.
 ```
 
 ---
 
-## Expected results
+## Expected Results
 
-This case has been proposed as a benchmark for FSI problems, and the solution for point A's axial and radial displacement (see figure above) is available in: [A. Lozovskiy, M. A. Olshanskii, and Y. V. Vassilevski, “Analysis and assessment of a monolithic FSI finite element method,” Computers and Fluids, vol. 179, pp. 277–288, 2019, doi: 10.1016/j.compfluid.2018.11.004.](https://doi.org/10.1016/j.compfluid.2018.11.004)
+This case has been proposed as a benchmark for FSI problems. The solution for point A's (see Figure 1) axial and radial displacement is available in: [A. Lozovskiy, M. A. Olshanskii, and Y. V. Vassilevski, “Analysis and assessment of a monolithic FSI finite element method,” Computers and Fluids, vol. 179, pp. 277–288, 2019, doi: 10.1016/j.compfluid.2018.11.004.](https://doi.org/10.1016/j.compfluid.2018.11.004)
 
-We compare the solution for the three approaches in the two figures below. Tests were run with approach (1) using both the Aitken and the IQN-ILS
-algorithms, where DNF is the Dirichlet-Neumann Formulation, WCM is the weakly compressible formulation, and RNF is the Robin-Neumann formulation.
+### Large Time Step
 
-![](./images/axial-displacement.png)
-![](./images/radial-displacement.png)
+Initially, we compare the solutions using a relatively large time step size of 1e-4 s. Figure 2 shows the radial displacement at point A vs time, Figure 3 shows the axial displacement at point A vs time, and Figure 4 shows the iterations per time step. In the figures, the approaches are designated as: 
 
-Overall, all solutions agree well with the reference solution. Only the Robin-Neumann formulation solution shows discrepancies for different time-step values (dt in the legend). This behaviour is expected due to the first-order approach used for the temporal discretisation, as detailed in [Ž. Tuković, M. Bukač, P. Cardiff, H. Jasak, and A. Ivanković, “Added Mass Partitioned Fluid–Structure Interaction Solver Based on a Robin Boundary Condition for Pressure,” OpenFOAM, pp. 1–22, 2019, doi: 10.1007/978-3-319-60846-4_1.](https://link.springer.com/chapter/10.1007/978-3-319-60846-4_1).
+- DNF-Aitken: Dirichlet-Neumann formulation with Aitken's acceleration and an incompressible fluid model;
+- DNF-IQNILS: Dirichlet-Neumann formulation with IQNILS acceleration and an incompressible fluid model;
+- WC-DNF-Aitken: Dirichlet-Neumann formulation with Aitken's acceleration and a weakly compressible fluid model;
+- WC-DNF-IQNILS: Dirichlet-Neumann formulation with IQNILS acceleration and a weakly compressible fluid model;
+- RNF: Robin-Neumann formulation with an incompressible fluid;
+- preCICE-DN-IQNILS: Dirichlet-Neumann formulation with Aitken's acceleration and an incompressible fluid model using preCICE.
 
-In the figure below, we can see the performance comparison among the different strategies in terms of the number of FSI coupling iterations.
+![](./images/axial-displacement-deltaT1e-4.png)
 
-![](./images/coupling-iterations.png)
+**Figure 2: Axial displacement at point A vs time with deltaT = 1e-4 s**
 
----
+![](./images/radial-displacement-deltaT1e-4.png)
 
-## Tips for fluid-solid analyses
+**Figure 3: Radial displacement at point A vs time with deltaT = 1e-4 s**
 
-All the tips provided in the beamInCrossFlow tutorial also apply to this case. But note from this case that different coupling algorithms may have much better performance; however, they may not always help, and you have to play with the settings to find a converging/stable solution.
+![](./images/coupling-iterations-deltaT1e-4.png)
+
+**Figure 4: Number of FSI iterations per time-step with deltaT = 1e-4 s**
+
+The predictions from all approaches agree closely. Examining the number of FSI iterations per time step, both implementations (solids4foam and preCICE) of Dirichlet-Neumann coupling with IQN-ILS acceleration are seen to require the least number of iterations. The weakly compressible approach is the next best performing approach, while the incompressible Aitken's-accelerated Dirichlet-Neumann and Robin-Neumann approaches are seen to perform the poorest.
+
+### Small Time Step
+
+To observe the effect of the time step size, the cases were re-run with a smaller time step of 2.5e-5 s, where Figures 5, 6 and 7 show the radial displacement, axial displacement and the number of iterations.
+![](./images/axial-displacement-deltaT2.5e-5.png)
+
+**Figure 5: Axial displacement at point A vs time with deltaT = 2.5e-5 s**
+
+![](./images/radial-displacement-deltaT2.5e-5.png)
+
+**Figure 6: Radial displacement at point A vs time with deltaT = 2.5e-5 s**
+
+![](./images/coupling-iterations-deltaT2.5e-5.png)
+
+**Figure 7: Number of FSI iterations per time-step with deltaT = 2.5e-5 s**
+
+Unlike the larger time step, the Robin-Neumann approach now requires the least number of iterations per time step (exactly 4 for every time step). The weakly compressible approaches are the next best, where the IQNILS-accelerated compressible model outperforms the Aitken's-accelerated compressible model. The incompressible IQNILS approaches are the next best (both solids4foam and preCICE). Finally, in this case, the Aitken's-accelerated incompressible model shows the poorest performance, requiring an order of magnitude greater number of iterations than the best approach. The impressive performance of the Robin-Neumann approach can also be observed for smaller time steps; in general, for cases like this, if the time step is sufficiently small, the Robin-Neumann approach requires minimal iterations; however, once the time step is large, then the Robin approach diverges or becomes uncompetitive.
+
+
+## Data Availability
+
+The results and gnuplot scripts used to generate the figures above are available in the [solids4foam tutorials benchmark data](https://github.com/solids4foam/solids4foam-tutorials-benchmark-data) repository.

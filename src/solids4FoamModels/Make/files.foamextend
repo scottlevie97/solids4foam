@@ -10,7 +10,6 @@ solidModels/solidModel/dualMeshToMeshMap.C
 solidModels/coupledLinGeomPressureDisplacementSolid/coupledLinGeomPressureDisplacementSolid.C
 solidModels/coupledNonLinGeomPressureDisplacementSolid/coupledNonLinGeomPressureDisplacementSolid.C
 solidModels/coupledUnsLinGeomLinearElasticSolid/coupledUnsLinGeomLinearElasticSolid.C
-solidModels/coupledUnsLinGeomSolid/coupledUnsLinGeomSolid.C
 solidModels/explicitLinGeomTotalDispSolid/explicitLinGeomTotalDispSolid.C
 solidModels/explicitUnsLinGeomTotalDispSolid/explicitUnsLinGeomTotalDispSolid.C
 solidModels/kirchhoffPlateSolid/kirchhoffPlateSolid.C
@@ -74,6 +73,7 @@ $(linGeomLaws)/viscousHookeanElastic/viscousHookeanElastic.C
 nonLinGeomLaws = $(mechanicalLaws)/nonLinearGeometryLaws
 $(nonLinGeomLaws)/isotropicFungElastic/isotropicFungElastic.C
 $(nonLinGeomLaws)/GentElastic/GentElastic.C
+$(nonLinGeomLaws)/OgdenElastic/OgdenElastic.C
 $(nonLinGeomLaws)/MooneyRivlinElastic/MooneyRivlinElastic.C
 $(nonLinGeomLaws)/neoHookeanElastic/neoHookeanElastic.C
 $(nonLinGeomLaws)/neoHookeanElasticMisesPlastic/neoHookeanElasticMisesPlastic.C
