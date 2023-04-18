@@ -317,6 +317,12 @@ protected:
             const bool writeResiduals = true
         );
 
+        // template<class Type>
+        // scalar residualvf
+        // (
+        //     const GeometricField<Type, fvPatchField, volMesh>& vf
+        // );
+
         //- Return solution standard tolerance
         scalar solutionTol() const
         {

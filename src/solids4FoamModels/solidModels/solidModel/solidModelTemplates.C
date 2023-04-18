@@ -90,7 +90,7 @@ bool Foam::solidModel::converged
     const scalar materialResidual = mechanical().residual();
 
     // If one of the residuals has converged to an order of magnitude
-    // less than the tolerance then consider the solution converged
+    // less than the tolerance then consider tjhe solution converged
     // force at least 1 outer iteration and the material law must be converged
     if (iCorr > 1 && materialResidual < materialTol_)
     {
@@ -161,6 +161,14 @@ bool Foam::solidModel::converged
         }
        
     }
+    else if (iCorr % infoFrequency_ == 0 )
+    {
+        Info<< "    " << iCorr
+            << ", " << solverPerfInitRes
+            << ", " << residualvf
+            << ", " << materialResidual
+            << ", " << solverPerfNIters << endl;
+    }   
     else if (iCorr == nCorr_ - 1)
     {
         maxIterReached_++;
@@ -175,12 +183,72 @@ bool Foam::solidModel::converged
             << runTime().value() << " "
             << iCorr << " "
             << runTime().elapsedCpuTime() << " "
-            << runTime().elapsedClockTime() << " "
+            << residualvf << " "
             << endl;
     }
 
     return converged;
 }
+
+
+// template<class Type>
+// scalar Foam::solidModel::residualvf
+// (
+//     const GeometricField<Type, fvPatchField, volMesh>& vf
+// )
+// {
+//     // Calculate displacement residual based on the relative change of vf
+//     scalar denom = gMax
+//     (
+// #ifdef OPENFOAMESIORFOUNDATION
+//         DimensionedField<scalar, volMesh>
+
+// #else
+//         Field<scalar>
+// #endif
+//         (
+//             mag(vf.internalField() - vf.oldTime().internalField())
+//         )
+//     );
+//     if (denom < SMALL)
+//     {
+//         denom = max
+//         (
+//             gMax
+//             (
+// #ifdef OPENFOAMESIORFOUNDATION
+//                 DimensionedField<scalar, volMesh>(mag(vf.internalField()))
+// #else
+//                 mag(vf.internalField())
+// #endif
+//             ),
+//             SMALL
+//         );
+//     }
+//     const scalar residualvf =
+//         gMax
+//         (
+// #ifdef OPENFOAMESIORFOUNDATION
+//             DimensionedField<scalar, volMesh>
+//             (
+//                 mag(vf.internalField() - vf.prevIter().internalField())
+//             )
+// #else
+//             mag(vf.internalField() - vf.prevIter().internalField())
+// #endif
+//         )/denom;
+
+//     Info << "mag(vf.internalField() - vf.prevIter().internalField())" << endl;
+//     Info << gMax(mag(vf.internalField() - vf.prevIter().internalField())) << endl;
+
+//    Info << "denom" << endl;
+//     Info << denom << endl;
+
+//    Info << "residualvf" << endl;
+//     Info << residualvf << endl;
+
+//     return residualvf;
+// }
 
 
 // ************************************************************************* //

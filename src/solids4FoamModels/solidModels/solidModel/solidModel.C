@@ -1446,7 +1446,7 @@ Foam::solidModel::solidModel
                 new OFstream(runTime.path()/"iterationTime.dat")
             );
             iterationTimeFilePtr_()
-                << "Time iteration ExecutionTime CPUTime"<< endl;
+                << "Time Iteration ExecutionTime Residual Res_x Res_y Res_z"<< endl;
         }
     }
 
