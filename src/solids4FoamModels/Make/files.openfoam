@@ -7,7 +7,6 @@ solidModels/solidModel/setCellDisplacements/setCellDisplacements.C
 solidModels/solidModel/dualMeshToMeshMap.C
 
 solidModels/coupledUnsLinGeomLinearElasticSolid/coupledUnsLinGeomLinearElasticSolid.C
-solidModels/coupledUnsLinGeomSolid/coupledUnsLinGeomSolid.C
 solidModels/explicitLinGeomTotalDispSolid/explicitLinGeomTotalDispSolid.C
 solidModels/explicitUnsLinGeomTotalDispSolid/explicitUnsLinGeomTotalDispSolid.C
 solidModels/linGeomSolid/linGeomSolid.C
@@ -64,12 +63,15 @@ $(linGeomLaws)/thermoMechanicalLaw/thermoMechanicalLaw.C
 $(linGeomLaws)/viscousHookeanElastic/viscousHookeanElastic.C
 
 nonLinGeomLaws = $(mechanicalLaws)/nonLinearGeometryLaws
+$(nonLinGeomLaws)/isotropicFungElastic/isotropicFungElastic.C
 $(nonLinGeomLaws)/GentElastic/GentElastic.C
-$(nonLinGeomLaws)/incompressibleMooneyRivlinElastic/incompressibleMooneyRivlinElastic.C
+$(nonLinGeomLaws)/OgdenElastic/OgdenElastic.C
+$(nonLinGeomLaws)/MooneyRivlinElastic/MooneyRivlinElastic.C
 $(nonLinGeomLaws)/neoHookeanElastic/neoHookeanElastic.C
 $(nonLinGeomLaws)/neoHookeanElasticMisesPlastic/neoHookeanElasticMisesPlastic.C
 $(nonLinGeomLaws)/StVenantKirchhoffElastic/StVenantKirchhoffElastic.C
 $(nonLinGeomLaws)/viscoNeoHookeanElastic/viscoNeoHookeanElastic.C
+$(nonLinGeomLaws)/YeohElastic/YeohElastic.C
 
 materialModels/thermalModel/thermalModel.C
 thermalLaws = materialModels/thermalModel/thermalLaws
@@ -155,6 +157,7 @@ functionObjects/solidStresses/solidStresses.C
 functionObjects/solidTorque/solidTorque.C
 functionObjects/solidTractions/solidTractions.C
 functionObjects/stressTriaxiality/stressTriaxiality.C
+functionObjects/volumetricStrain/volumetricStrain.C
 
 numerics/amiZoneInterpolation/amiZoneInterpolation.C
 numerics/backwardD2dt2Scheme/backwardD2dt2Schemes.C

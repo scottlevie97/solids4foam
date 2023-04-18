@@ -1,26 +1,19 @@
 /*---------------------------------------------------------------------------*\
-  =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
-   \\    /   O peration     |
-    \\  /    A nd           | Copyright held by original author
-     \\/     M anipulation  |
--------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of solids4foam.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    solids4foam is free software: you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation, either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
-    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-    FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-    for more details.
+    solids4foam is distributed in the hope that it will be useful, but
+    WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
+    along with solids4foam.  If not, see <http://www.gnu.org/licenses/>.
 
 \*----------------------------------------------------------------------------*/
 
@@ -61,10 +54,10 @@ bool Foam::principalStresses::writeData()
         {
             sigmaPtr = &(mesh_.lookupObject<volSymmTensorField>("sigmaCauchy"));
         }
-        const volSymmTensorField& sigma = *sigmaPtr;;
+        const volSymmTensorField& sigma = *sigmaPtr;
 
         // Calculate and write principal stress fields
-        writePrincipalStressFields(sigma);
+        writePrincipalStressFields(sigma, compressionPositive_);
     }
 
     return true;
@@ -88,9 +81,14 @@ Foam::principalStresses::principalStresses
         (
             dict.lookupOrDefault<word>("region", "region0")
         )
+    ),
+    compressionPositive_
+    (
+        dict.lookupOrDefault("compressionPositive", false)
     )
 {
-    Info<< "Creating " << this->name() << " function object" << endl;
+    Info<< "Creating " << this->name() << " function object" << nl
+        << "    compressionPositive: " << compressionPositive_ << endl;
 }
 
 

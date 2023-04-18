@@ -6,34 +6,36 @@
      \\/     M anipulation  | For copyright notice see file Copyright
 -------------------------------------------------------------------------------
 License
-    This file is part of foam-extend.
+    This file is part of solids4foam.
 
-    foam-extend is free software: you can redistribute it and/or modify it
+    solids4foam is free software: you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
     Free Software Foundation, either version 3 of the License, or (at your
     option) any later version.
 
-    foam-extend is distributed in the hope that it will be useful, but
+    solids4foam is distributed in the hope that it will be useful, but
     WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
     General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with foam-extend.  If not, see <http://www.gnu.org/licenses/>.
+    along with solids4foam.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
     Foam::fv::backwardD2dt2Scheme
 
 Description
-    First-order backward implicit d2dt2 using the current and two previous
+    Second-order backward implicit d2dt2 using the current and four previous
     time-step values.
 
 SourceFiles
     backwardD2dt2Scheme.C
 
-\*---------------------------------------------------------------------------*/
+Author
+    Zeljko Tukovic
+    Some additions by Philip Cardiff
 
-#ifdef OPENFOAMESIORFOUNDATION
+\*---------------------------------------------------------------------------*/
 
 #ifndef backwardD2dt2Scheme_H
 #define backwardD2dt2Scheme_H
@@ -157,7 +159,5 @@ public:
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #endif
-
-#endif // end of #ifdef OPENFOAMESIORFOUNDATION
 
 // ************************************************************************* //

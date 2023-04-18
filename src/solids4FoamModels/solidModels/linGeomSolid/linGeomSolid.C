@@ -1,26 +1,19 @@
 /*---------------------------------------------------------------------------*\
-  =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
-   \\    /   O peration     |
-    \\  /    A nd           | Copyright held by original author
-     \\/     M anipulation  |
--------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of solids4foam.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    solids4foam is free software: you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation, either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
-    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-    FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-    for more details.
+    solids4foam is distributed in the hope that it will be useful, but
+    WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
+    along with solids4foam.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -57,12 +50,26 @@ linGeomSolid::linGeomSolid
     solidModel(typeName, runTime, region),
     impK_(mechanical().impK()),
     impKf_(mechanical().impKf()),
-    rImpK_(1.0/impK_)
+    rImpK_(1.0/impK_),
+    rhoDdtD_0_
+    (
+        IOobject
+        (
+            "rhoDdtD_0",
+            runTime.timeName(),
+            mesh(),
+            IOobject::READ_IF_PRESENT,
+            IOobject::AUTO_WRITE
+        ),
+        mesh(),
+        dimensionedVector("zero", dimForce/dimVolume, vector::zero)
+    )
 {
     DDisRequired();
 
     // Force all required old-time fields to be created
     fvm::d2dt2(DD());
+    fvc::d2dt2(D().oldTime());
 
     // For consistent restarts, we will calculate the gradient field
     DD().correctBoundaryConditions();
@@ -102,7 +109,7 @@ bool linGeomSolid::evolve()
             fvVectorMatrix DDEqn
             (
                 rho()*fvm::d2dt2(DD())
-              + rho()*fvc::d2dt2(D().oldTime())
+              + rhoDdtD_0_
              == fvm::laplacian(impKf_, DD(), "laplacian(DDD,DD)")
               - fvc::laplacian(impKf_, DD(), "laplacian(DDD,DD)")
               + fvc::div(sigma(), "div(sigma)")
@@ -166,6 +173,9 @@ bool linGeomSolid::evolve()
         U() = fvc::ddt(D());
     }
     while (mesh().update());
+
+    // Store ddt old term
+    rhoDdtD_0_ = rho()*fvc::d2dt2(D());
 
 #ifdef OPENFOAMESIORFOUNDATION
     SolverPerformance<vector>::debug = 1;

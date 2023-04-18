@@ -6,20 +6,20 @@
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
-    This file is part of foam-extend.
+    This file is part of solids4foam.
 
-    foam-extend is free software: you can redistribute it and/or modify it
+    solids4foam is free software: you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
     Free Software Foundation, either version 3 of the License, or (at your
     option) any later version.
 
-    foam-extend is distributed in the hope that it will be useful, but
+    solids4foam is distributed in the hope that it will be useful, but
     WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
     General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with foam-extend.  If not, see <http://www.gnu.org/licenses/>.
+    along with solids4foam.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
     linearElastic
@@ -72,20 +72,19 @@ class linearElastic
         //- First Lame parameter
         dimensionedScalar lambda_;
 
-        //- Initial (residual) stress field
-        //  Defaults to zero if not specified
-        const volSymmTensorField sigma0_;
-
         //- Initial (residual) stress surface field
-        mutable surfaceSymmTensorField* sigma0fPtr_;
+        mutable autoPtr<surfaceSymmTensorField> sigma0fPtr_;
 
     // Private Member Functions
 
         //- Make the initial stress surface field
         void makeSigma0f() const;
 
-        //- Return a reference to the initial stress surface field
+        //- Return a const reference to the initial stress surface field
         const surfaceSymmTensorField& sigma0f() const;
+
+        //- Return a non-const reference to the initial stress surface field
+        surfaceSymmTensorField& sigma0f();
 
         //- Disallow default bitwise copy construct
         linearElastic(const linearElastic&);
@@ -115,7 +114,8 @@ public:
 
     // Destructor
 
-        virtual ~linearElastic();
+        virtual ~linearElastic()
+        {}
 
 
     // Member Functions

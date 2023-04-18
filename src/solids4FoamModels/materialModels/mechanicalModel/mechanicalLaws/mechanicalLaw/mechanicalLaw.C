@@ -6,20 +6,20 @@
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
-    This file is part of foam-extend.
+    This file is part of solids4foam.
 
-    foam-extend is free software: you can redistribute it and/or modify it
+    solids4foam is free software: you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
     Free Software Foundation, either version 3 of the License, or (at your
     option) any later version.
 
-    foam-extend is distributed in the hope that it will be useful, but
+    solids4foam is distributed in the hope that it will be useful, but
     WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
     General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with foam-extend.  If not, see <http://www.gnu.org/licenses/>.
+    along with solids4foam.  If not, see <http://www.gnu.org/licenses/>.
 
 InClass
     Foam::mechanicalLaw
@@ -49,6 +49,141 @@ namespace Foam
 }
 
 // * * * * * * * * * * *  Private Member Funtcions * * * * * * * * * * * * * //
+
+void Foam::mechanicalLaw::makeMu() const
+{
+    if (muPtr_.valid())
+    {
+        FatalErrorIn("void " + type() + "::makeMu()")
+            << "pointer already set" << abort(FatalError);
+    }
+
+    muPtr_.set
+    (
+        new volScalarField
+        (
+            IOobject
+            (
+                "mu_" + name_,
+                mesh().time().timeName(),
+                mesh(),
+                IOobject::READ_IF_PRESENT,
+                IOobject::NO_WRITE
+            ),
+            mesh(),
+            dimensionedScalar("0", dimPressure, 0.0)
+        )
+    );
+}
+
+
+void Foam::mechanicalLaw::makeMuf() const
+{
+    if (mufPtr_.valid())
+    {
+        FatalErrorIn("void " + type() + "::makeMuf()")
+            << "pointer already set" << abort(FatalError);
+    }
+
+    mufPtr_.set
+    (
+        new surfaceScalarField
+        (
+            IOobject
+            (
+                "muf_" + name_,
+                mesh().time().timeName(),
+                mesh(),
+                IOobject::READ_IF_PRESENT,
+                IOobject::NO_WRITE
+            ),
+            mesh(),
+            dimensionedScalar("0", dimPressure, 0.0)
+        )
+    );
+}
+
+
+void Foam::mechanicalLaw::makeK() const
+{
+    if (KPtr_.valid())
+    {
+        FatalErrorIn("void " + type() + "::makeK()")
+            << "pointer already set" << abort(FatalError);
+    }
+
+    KPtr_.set
+    (
+        new volScalarField
+        (
+            IOobject
+            (
+                "K_" + name_,
+                mesh().time().timeName(),
+                mesh(),
+                IOobject::READ_IF_PRESENT,
+                IOobject::NO_WRITE
+            ),
+            mesh(),
+            dimensionedScalar("0", dimPressure, 0.0)
+        )
+    );
+}
+
+
+void Foam::mechanicalLaw::makeKf() const
+{
+    if (KfPtr_.valid())
+    {
+        FatalErrorIn("void " + type() + "::makeKf()")
+            << "pointer already set" << abort(FatalError);
+    }
+
+    KfPtr_.set
+    (
+        new surfaceScalarField
+        (
+            IOobject
+            (
+                "Kf_" + name_,
+                mesh().time().timeName(),
+                mesh(),
+                IOobject::READ_IF_PRESENT,
+                IOobject::NO_WRITE
+            ),
+            mesh(),
+            dimensionedScalar("0", dimPressure, 0.0)
+        )
+    );
+}
+
+
+void Foam::mechanicalLaw::makeSigma0() const
+{
+    if (sigma0Ptr_.valid())
+    {
+        FatalErrorIn("void " + type() + "::makeSigma0()")
+            << "pointer already set" << abort(FatalError);
+    }
+
+    sigma0Ptr_.set
+    (
+        new volSymmTensorField
+        (
+            IOobject
+            (
+                "sigma0",
+                mesh().time().timeName(),
+                mesh(),
+                IOobject::READ_IF_PRESENT,
+                IOobject::NO_WRITE
+            ),
+            mesh(),
+            dimensionedSymmTensor("0", dimPressure, symmTensor::zero)
+        )
+    );
+}
+
 
 void Foam::mechanicalLaw::makeEpsilon() const
 {
@@ -330,6 +465,216 @@ bool Foam::mechanicalLaw::planeStress() const
 }
 
 
+const Foam::volScalarField& Foam::mechanicalLaw::mu() const
+{
+    if (muPtr_.empty())
+    {
+        makeMu();
+    }
+
+    return muPtr_();
+}
+
+
+Foam::volScalarField& Foam::mechanicalLaw::mu()
+{
+    if (muPtr_.empty())
+    {
+        makeMu();
+    }
+
+    return muPtr_();
+}
+
+
+const Foam::surfaceScalarField& Foam::mechanicalLaw::muf() const
+{
+    if (mufPtr_.empty())
+    {
+        makeMuf();
+    }
+
+    return mufPtr_();
+}
+
+
+Foam::surfaceScalarField& Foam::mechanicalLaw::muf()
+{
+    if (mufPtr_.empty())
+    {
+        makeMuf();
+    }
+
+    return mufPtr_();
+}
+
+
+const Foam::volScalarField& Foam::mechanicalLaw::mu(const dimensionedScalar& mu)
+{
+    if (muPtr_.empty())
+    {
+        makeMu();
+    }
+
+    // Set constant field, overwriting any existing values
+    muPtr_() = mu;
+
+    // Return a reference to the field
+    return muPtr_();
+}
+
+
+const Foam::surfaceScalarField& Foam::mechanicalLaw::muf
+(
+    const dimensionedScalar& mu
+)
+{
+    if (mufPtr_.empty())
+    {
+        makeMuf();
+    }
+
+    // Set constant field, overwriting any existing values
+    mufPtr_() = mu;
+
+    // Return a reference to the field
+    return mufPtr_();
+}
+
+
+const Foam::volScalarField& Foam::mechanicalLaw::K() const
+{
+    if (KPtr_.empty())
+    {
+        makeK();
+    }
+
+    return KPtr_();
+}
+
+
+Foam::volScalarField& Foam::mechanicalLaw::K()
+{
+    if (KPtr_.empty())
+    {
+        makeK();
+    }
+
+    return KPtr_();
+}
+
+
+const Foam::surfaceScalarField& Foam::mechanicalLaw::Kf() const
+{
+    if (KfPtr_.empty())
+    {
+        makeKf();
+    }
+
+    return KfPtr_();
+}
+
+
+Foam::surfaceScalarField& Foam::mechanicalLaw::Kf()
+{
+    if (KfPtr_.empty())
+    {
+        makeKf();
+    }
+
+    return KfPtr_();
+}
+
+
+const Foam::volScalarField& Foam::mechanicalLaw::K(const dimensionedScalar& K)
+{
+    if (KPtr_.empty())
+    {
+        makeK();
+    }
+
+    // Set constant field, overwriting any existing values
+    KPtr_() = K;
+
+    // Return a reference to the field
+    return KPtr_();
+}
+
+
+const Foam::surfaceScalarField& Foam::mechanicalLaw::Kf
+(
+    const dimensionedScalar& K
+)
+{
+    if (KfPtr_.empty())
+    {
+        makeKf();
+    }
+
+    // Set constant field, overwriting any existing values
+    KfPtr_() = K;
+
+    // Return a reference to the field
+    return KfPtr_();
+}
+
+
+const Foam::volScalarField& Foam::mechanicalLaw::impK
+(
+    const dimensionedScalar& impK
+)
+{
+    if (impKPtr_.empty())
+    {
+        // Construct the field
+        impKPtr_.set
+        (
+            new volScalarField
+            (
+                IOobject
+                (
+                    "impK_" + name_,
+                    mesh().time().timeName(),
+                    mesh(),
+                    IOobject::READ_IF_PRESENT,
+                    IOobject::NO_WRITE
+                ),
+                mesh(),
+                impK
+            )
+        );
+    }
+
+    // Set constant field, overwriting any existing values
+    impKPtr_() = impK;
+
+    // Return a reference to the field
+    return impKPtr_();
+}
+
+
+const Foam::volSymmTensorField& Foam::mechanicalLaw::sigma0() const
+{
+    if (sigma0Ptr_.empty())
+    {
+        makeSigma0();
+    }
+
+    return sigma0Ptr_();
+}
+
+
+Foam::volSymmTensorField& Foam::mechanicalLaw::sigma0()
+{
+    if (sigma0Ptr_.empty())
+    {
+        makeSigma0();
+    }
+
+    return sigma0Ptr_();
+}
+
+
 const Foam::volSymmTensorField& Foam::mechanicalLaw::epsilon() const
 {
     if (epsilonPtr_.empty())
@@ -339,6 +684,7 @@ const Foam::volSymmTensorField& Foam::mechanicalLaw::epsilon() const
 
     return epsilonPtr_();
 }
+
 
 Foam::volSymmTensorField& Foam::mechanicalLaw::epsilon()
 {
@@ -350,7 +696,8 @@ Foam::volSymmTensorField& Foam::mechanicalLaw::epsilon()
     return epsilonPtr_();
 }
 
-Foam::surfaceSymmTensorField& Foam::mechanicalLaw::epsilonf()
+
+const Foam::surfaceSymmTensorField& Foam::mechanicalLaw::epsilonf() const
 {
     if (epsilonfPtr_.empty())
     {
@@ -360,7 +707,8 @@ Foam::surfaceSymmTensorField& Foam::mechanicalLaw::epsilonf()
     return epsilonfPtr_();
 }
 
-const Foam::surfaceSymmTensorField& Foam::mechanicalLaw::epsilonf() const
+
+Foam::surfaceSymmTensorField& Foam::mechanicalLaw::epsilonf()
 {
     if (epsilonfPtr_.empty())
     {
@@ -497,6 +845,22 @@ bool Foam::mechanicalLaw::updateF
     const dimensionedScalar& K
 )
 {
+    return updateF
+    (
+        sigma,
+        mechanicalLaw::mu(mu),
+        mechanicalLaw::K(K)
+    );
+}
+
+
+bool Foam::mechanicalLaw::updateF
+(
+    volSymmTensorField& sigma,
+    const volScalarField& mu,
+    const volScalarField& K
+)
+{
     if (curTimeIndex_ != mesh().time().timeIndex())
     {
         curTimeIndex_ = mesh().time().timeIndex();
@@ -623,11 +987,27 @@ bool Foam::mechanicalLaw::updateF
 }
 
 
-bool Foam::mechanicalLaw::updateFf
+bool Foam::mechanicalLaw::updateF
 (
     surfaceSymmTensorField& sigma,
     const dimensionedScalar& mu,
     const dimensionedScalar& K
+)
+{
+    return updateF
+    (
+        sigma,
+        mechanicalLaw::muf(mu),
+        mechanicalLaw::Kf(K)
+    );
+}
+
+
+bool Foam::mechanicalLaw::updateF
+(
+    surfaceSymmTensorField& sigma,
+    const surfaceScalarField& mu,
+    const surfaceScalarField& K
 )
 {
     // Check if the mathematical model is in total or updated Lagrangian form
@@ -739,6 +1119,16 @@ void Foam::mechanicalLaw::updateSigmaHyd
 (
     const volScalarField& sigmaHydExplicit,
     const dimensionedScalar& impK
+)
+{
+    updateSigmaHyd(sigmaHydExplicit, mechanicalLaw::impK(impK));
+}
+
+
+void Foam::mechanicalLaw::updateSigmaHyd
+(
+    const volScalarField& sigmaHydExplicit,
+    const volScalarField& impK
 )
 {
     if (solvePressureEqn_)
@@ -879,6 +1269,10 @@ Foam::mechanicalLaw::mechanicalLaw
     dict_(dict),
     baseMeshRegionName_(),
     nonLinGeom_(nonLinGeom),
+    muPtr_(),
+    mufPtr_(),
+    KPtr_(),
+    KfPtr_(),
     epsilonPtr_(),
     epsilonfPtr_(),
     FPtr_(),

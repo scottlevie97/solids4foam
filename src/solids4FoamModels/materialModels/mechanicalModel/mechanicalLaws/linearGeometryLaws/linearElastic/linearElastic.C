@@ -6,20 +6,20 @@
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
-    This file is part of foam-extend.
+    This file is part of solids4foam.
 
-    foam-extend is free software: you can redistribute it and/or modify it
+    solids4foam is free software: you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
     Free Software Foundation, either version 3 of the License, or (at your
     option) any later version.
 
-    foam-extend is distributed in the hope that it will be useful, but
+    solids4foam is distributed in the hope that it will be useful, but
     WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
     General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with foam-extend.  If not, see <http://www.gnu.org/licenses/>.
+    along with solids4foam.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -44,29 +44,42 @@ namespace Foam
 
 void Foam::linearElastic::makeSigma0f() const
 {
-    if (sigma0fPtr_)
+    if (sigma0fPtr_.valid())
     {
         FatalErrorIn("void Foam::linearElastic::makeSigma0f() const")
             << "pointer already set" << abort(FatalError);
     }
 
-    sigma0fPtr_ =
+    sigma0fPtr_.set
+    (
         new surfaceSymmTensorField
         (
             "sigma0f",
-            fvc::interpolate(sigma0_)
-        );
+            linearInterpolate(sigma0())
+        )
+    );
 }
 
 
 const Foam::surfaceSymmTensorField& Foam::linearElastic::sigma0f() const
 {
-    if (!sigma0fPtr_)
+    if (sigma0fPtr_.empty())
     {
         makeSigma0f();
     }
 
-    return *sigma0fPtr_;
+    return sigma0fPtr_();
+}
+
+
+Foam::surfaceSymmTensorField& Foam::linearElastic::sigma0f()
+{
+    if (sigma0fPtr_.empty())
+    {
+        makeSigma0f();
+    }
+
+    return sigma0fPtr_();
 }
 
 
@@ -87,24 +100,7 @@ Foam::linearElastic::linearElastic
     E_("E", dimPressure, 0.0),
     nu_("nu", dimless, 0.0),
     lambda_("lambda", dimPressure, 0.0),
-    sigma0_
-    (
-        IOobject
-        (
-            "sigma0",
-            mesh.time().timeName(),
-            mesh,
-            IOobject::READ_IF_PRESENT,
-            IOobject::NO_WRITE
-        ),
-        mesh,
-        dict.lookupOrDefault<dimensionedSymmTensor>
-        (
-            "sigma0",
-            dimensionedSymmTensor("zero", dimPressure, symmTensor::zero)
-        )
-    ),
-    sigma0fPtr_(NULL)
+    sigma0fPtr_()
 {
     // Store old times
     epsilon().storeOldTime();
@@ -205,23 +201,16 @@ Foam::linearElastic::linearElastic
             << "consider setting 'solvePressureEqn' to 'yes'!" << endl;
     }
 
-    if (gMax(mag(sigma0_)()) > SMALL)
+    // Read the initial stress
+    if (dict.found("sigma0"))
     {
-        Info<< "Reading sigma0 initial/residual stress field" << endl;
+        Info<< "Reading sigma0 from the dict" << endl;
+        sigma0() = dimensionedSymmTensor(dict.lookup("sigma0"));
     }
-
-    if (gMax(mag(sigma0_)()) > SMALL)
+    else if (gMax(mag(sigma0())()) > SMALL)
     {
-        Info<< "Reading sigma0 initial/residual stress field" << endl;
+        Info<< "Reading sigma0 stress field" << endl;
     }
-}
-
-
-// * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
-
-Foam::linearElastic::~linearElastic()
-{
-    deleteDemandDrivenData(sigma0fPtr_);
 }
 
 
@@ -357,12 +346,12 @@ void Foam::linearElastic::correct(volSymmTensorField& sigma)
         updateSigmaHyd(K_*tr(epsilon()), 2*mu_ + lambda_);
 
         // Hooke's law: partitioned deviatoric and dilation form
-        sigma = 2.0*mu_*dev(epsilon()) + sigmaHyd()*I + sigma0_;
+        sigma = 2.0*mu_*dev(epsilon()) + sigmaHyd()*I + sigma0();
     }
     else
     {
         // Hooke's law: standard form
-        sigma = 2.0*mu_*epsilon() + lambda_*tr(epsilon())*I + sigma0_;
+        sigma = 2.0*mu_*epsilon() + lambda_*tr(epsilon())*I + sigma0();
 
         // Update sigmaHyd variable
         sigmaHyd() = -K_*tr(epsilon());

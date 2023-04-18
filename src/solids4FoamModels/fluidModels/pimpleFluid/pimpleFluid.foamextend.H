@@ -1,35 +1,35 @@
 /*---------------------------------------------------------------------------*\
-  =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
-   \\    /   O peration     |
-    \\  /    A nd           | Copyright held by original author
-     \\/     M anipulation  |
--------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of solids4foam.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    solids4foam is free software: you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation, either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
-    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-    FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-    for more details.
+    solids4foam is distributed in the hope that it will be useful, but
+    WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
+    along with solids4foam.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
     pimpleFluid
 
 Description
-    pimpleDyMFoam fluid model from foam-extend-4.1.
+    pimpleDyMFoam fluid model from foam-extend-4.1 with support for the
+    "elastic" Robin boundary conditions for partitioned FSI as described in:
+
+        Tuković et al. Added Mass Partitioned Fluid–Structure Interaction
+        Solver Based on a Robin Boundary Condition for Pressure. OpenFOAM.
+        2019;1–22.
 
 Author
-    Ported by Philip Cardiff, UCD.
+    Hrvoje Jasak, Wikki Ltd. All rights reserved.
+    Zeljko Tukovic, FSB Zagreb. All rights reserved.
+    Philip Cardiff, UCD. All rights reserved.
 
 SourceFiles
     pimpleFluid.foamextend.C
@@ -70,8 +70,17 @@ class pimpleFluid
         //- Fluid density [kg/m3]
         dimensionedScalar rho_;
 
+        //- Acceleration field
+        volVectorField ddtU_;
+
+        //- Velocity field
+        surfaceVectorField Uf_;
+
         //- rAU field
         volScalarField rAU_;
+
+        //- rAUf field
+        surfaceScalarField rAUf_;
 
         //- Reference pressure cell
         label pRefCell_;
@@ -93,16 +102,14 @@ class pimpleFluid
 
     // Private Member Functions
 
-        //- Correct phi function
-        void correctPhi();
+        //- Reset flux if mesh changed
+        void updateRobinFsiInterfaceFlux();
 
-        //- Solve pressure equation
-        void solvePEqn
-        (
-            const scalar& UUrf,
-            const fvVectorMatrix& ddtUEqn,
-            const fvVectorMatrix& HUEqn
-        );
+        //- Update phi for Robin FSI boundary conditions
+        void updateRobinFsiInterface();
+
+        //- Correct phi after solving pressure equation
+        void correctRobinFsiInterfaceFlux();
 
         //- Disallow default bitwise copy construct
         pimpleFluid(const pimpleFluid&);
@@ -115,6 +122,7 @@ public:
 
     //- Runtime type information
     TypeName("pimpleFluid");
+
 
     // Constructors
 

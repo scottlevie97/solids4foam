@@ -6,20 +6,20 @@
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
-    This file is part of foam-extend.
+    This file is part of solids4foam.
 
-    foam-extend is free software: you can redistribute it and/or modify it
+    solids4foam is free software: you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
     Free Software Foundation, either version 3 of the License, or (at your
     option) any later version.
 
-    foam-extend is distributed in the hope that it will be useful, but
+    solids4foam is distributed in the hope that it will be useful, but
     WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
     General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with foam-extend.  If not, see <http://www.gnu.org/licenses/>.
+    along with solids4foam.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
     Foam::mechanicalLaw
@@ -31,6 +31,10 @@ SourceFiles
     mechanicalLaw.C
     newMechanicalLaw.C
 
+Author
+    Philip Cardiff, UCD.
+    Iago Oliveira
+
 \*---------------------------------------------------------------------------*/
 
 #ifndef mechanicalLaw_H
@@ -40,6 +44,7 @@ SourceFiles
 #include "typeInfo.H"
 #include "runTimeSelectionTables.H"
 #include "volFields.H"
+#include "surfaceFields.H"
 #include "tmp.H"
 #include "autoPtr.H"
 #include "nonLinearGeometry.H"
@@ -72,6 +77,27 @@ class mechanicalLaw
 
         //- Nonlinear geometry enumerator
         const nonLinearGeometry::nonLinearType nonLinGeom_;
+
+        //- Linearised shear modulus
+        mutable autoPtr<volScalarField> muPtr_;
+
+        //- Linearised shear modulus surface field
+        mutable autoPtr<surfaceScalarField> mufPtr_;
+
+        //- Linearised bulk modulus
+        mutable autoPtr<volScalarField> KPtr_;
+
+        //- Linearised bulk modulus surface field
+        mutable autoPtr<surfaceScalarField> KfPtr_;
+
+        //- Linearised implicit modulus field
+        mutable autoPtr<volScalarField> impKPtr_;
+
+        //- Initial (residual) stress field
+        //  Note: for nonlinear geometry laws, it is law specific whether this
+        //  is the Cauchy stress or 2nd Piola-Kirchhoff or some other stress
+        //  measure
+        mutable autoPtr<volSymmTensorField> sigma0Ptr_;
 
         // Small strain tensor
         mutable autoPtr<volSymmTensorField> epsilonPtr_;
@@ -120,6 +146,21 @@ class mechanicalLaw
 
 
     // Private Member Functions
+
+        //- Make the mu field
+        void makeMu() const;
+
+        //- Make the muf field
+        void makeMuf() const;
+
+        //- Make the K field
+        void makeK() const;
+
+        //- Make the Kf field
+        void makeKf() const;
+
+        //- Make the sigma0 field
+        void makeSigma0() const;
 
         //- Make the epsilon field
         void makeEpsilon() const;
@@ -184,6 +225,51 @@ protected:
             );
         }
 
+        //- Return a const reference to the mu field
+        const volScalarField& mu() const;
+
+        //- Return a non-const reference to the mu field
+        volScalarField& mu();
+
+        //- Return a const reference to the muf field
+        const surfaceScalarField& muf() const;
+
+        //- Return a non-const reference to the muf field
+        surfaceScalarField& muf();
+
+        //- Assign a constant mu field and return a reference to it
+        const volScalarField& mu(const dimensionedScalar& mu);
+
+        //- Assign a constant muf field and return a reference to it
+        const surfaceScalarField& muf(const dimensionedScalar& mu);
+
+        //- Return a const reference to the K field
+        const volScalarField& K() const;
+
+        //- Return a non-const reference to the K field
+        volScalarField& K();
+
+        //- Return a const reference to the Kf field
+        const surfaceScalarField& Kf() const;
+
+        //- Return a non-const reference to the Kf field
+        surfaceScalarField& Kf();
+
+        //- Assign a constant Ku field and return a reference to it
+        const volScalarField& K(const dimensionedScalar& K);
+
+        //- Assign a constant Kuf field and return a reference to it
+        const surfaceScalarField& Kf(const dimensionedScalar& K);
+
+        //- Assign a constant impK field and return a reference to it
+        const volScalarField& impK(const dimensionedScalar& impK);
+
+        //- Return a const reference to the sigma0 field
+        const volSymmTensorField& sigma0() const;
+
+        //- Return a non-const reference to the sigma0 field
+        volSymmTensorField& sigma0();
+
         //- Return a const reference to the epsilon field
         const volSymmTensorField& epsilon() const;
 
@@ -224,7 +310,7 @@ protected:
         void updateEpsilonf();
 
         //- Update the deformation gradient
-        //  The lienarised shear and bulk modulii are used to enforce linear
+        //  The linearised shear and bulk modulii are used to enforce linear
         //  elasticity in the case that the enforceLinear flag is tripped by the
         //  solid model
         //  true is returned if enforceLinear is true (linear elasticity is
@@ -236,13 +322,30 @@ protected:
             const dimensionedScalar& K
         );
 
+        //- Update the deformation gradient
+        bool updateF
+        (
+            volSymmTensorField& sigma,
+            const volScalarField& mu,
+            const volScalarField& K
+        );
+
         //- Equivalent to the updateF function, except instead for the Ff
         //  surface field
-        bool updateFf
+        bool updateF
         (
             surfaceSymmTensorField& sigma,
             const dimensionedScalar& mu,
             const dimensionedScalar& K
+        );
+
+        //- Equivalent to the updateF function, except instead for the Ff
+        //  surface field
+        bool updateF
+        (
+            surfaceSymmTensorField& sigma,
+            const surfaceScalarField& mu,
+            const surfaceScalarField& K
         );
 
         //- Update the hydrostatic stress field by solving a diffusion equation.
@@ -254,6 +357,13 @@ protected:
         (
             const volScalarField& sigmaHydExplicit,
             const dimensionedScalar& impK
+        );
+
+        //- Update the hydrostatic stress field by solving a diffusion equation.
+        void updateSigmaHyd
+        (
+            const volScalarField& sigmaHydExplicit,
+            const volScalarField& impK
         );
 
         //- Lookup the enforceLinear Switch in the solidModel
@@ -361,7 +471,7 @@ public:
         {
             return dict_;
         }
-    
+
         //- Return scalar density, if defined
         virtual dimensionedScalar rhoScalar() const;
 
