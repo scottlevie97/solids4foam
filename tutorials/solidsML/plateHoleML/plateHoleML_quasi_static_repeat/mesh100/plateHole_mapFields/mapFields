@@ -1,0 +1,14 @@
+#!/bin/bash
+
+# Create mesh
+blockMesh
+
+# Map fields
+
+mapFields  -sourceTime latestTime  -consistent ../../mesh10/plateHole/
+
+cd 0
+
+shopt -s extglob 
+rm -- !(D)
+
