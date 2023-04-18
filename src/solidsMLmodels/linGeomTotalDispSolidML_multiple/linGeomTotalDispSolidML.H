@@ -95,7 +95,7 @@ namespace Foam
             const int machinePredictorIter_;
 
             //- JSON file name
-            fileName jsonFile_;
+            List<fileName> jsonFiles_;
 
             //- Converged case path for test convergence
             fileName convergedCase_;
@@ -200,7 +200,7 @@ namespace Foam
             virtual bool evolve();
 
             //- Set D using machine learning predictor
-            virtual void updateD_ML();
+            virtual void updateD_ML(int predictionCount, fileName jsonFile);
 
             // - Set D using machine learning predictor
             virtual void updateD_testConverged();
@@ -212,7 +212,7 @@ namespace Foam
             virtual void BoundaryTractionLoop();
 
             // - Write Displacement for each iteration
-            virtual void writeDisplacementIteration(int iteration, bool converged);
+            virtual void writeDisplacementIteration(int predictionCount, int iter, bool converged);
 
             // - Write Displacement for prediction iteration
             virtual void writePredictedDField();
@@ -230,6 +230,10 @@ namespace Foam
                 const vectorField &traction,
                 const scalarField &pressure,
                 const fvPatch &patch) const;
+
+            scalar residualvf();
+
+
         };
 
         // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

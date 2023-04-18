@@ -1,0 +1,13 @@
+{
+    "files.associations": {
+        "linGeomTotalDispSolidML.C": "cpp",
+        "dualMeshToMeshMap.C": "cpp",
+        "lookupSolidModel.C": "cpp",
+        "solidModelTemplates.C": "cpp",
+        "solidModel.C": "cpp",
+        "solidModel.H": "cpp",
+        "solidproperties": "cpp",
+        "list": "cpp",
+        "string": "cpp"
+    }
+}

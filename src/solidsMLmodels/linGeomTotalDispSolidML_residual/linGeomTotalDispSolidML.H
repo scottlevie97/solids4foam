@@ -84,11 +84,7 @@ namespace Foam
             //- Predict new time-step fields using the velocity field
             const Switch predictor_;
 
-            //- Write file with individual residuals for each direction
-            autoPtr<OFstream> indivResidualFilePtr_;
-            const Switch writeIndivResidualFile_;
-
-            // - Flag to switch to machine learning prediction
+            // - Flag to switch to machine learning prdiction
             const Switch machineLearning_;
 
             //- Iteration at which the machine learning predictor is applied
@@ -97,12 +93,23 @@ namespace Foam
             //- JSON file name
             fileName jsonFile_;
 
-            //- Converged case path for test convergence
+            //- Converged case path
             fileName convergedCase_;
+
+            // Number of iterations in correction
+            const int tracBcIter_;
 
             //- List of cell D fields for previous
             //  iterations. These are used by the machine learning predictor
             PtrList<vectorField> prevCellD_;
+
+            PtrList<vectorField> prevCellR_;
+
+            vectorField residualD;
+
+            // //List of scaling means and std deviations (input data | output data)
+            List<vector> kerasScalingMeans_;
+            List<vector> kerasScalingStds_;
 
             // - Flag to switch to test converged values
             const Switch testConverged_;
@@ -110,27 +117,39 @@ namespace Foam
             //-  BC Correction Loop File
             autoPtr<OFstream> BCloopCorrFile_;
 
-            const int writeCellDisplacement_;
-
-            autoPtr<OFstream> cellDisplacementFile_;
-
-            List<scalar> cellList_;
-
             //- Write displacement fields for each iteration
             const Switch writeDisplacementField_;
 
             //- Write displacements up until this iteration
             const int writeDisplacementLimit_;
 
-            //- Use cell centre coordinates as input feature
-            const Switch useCoordinates_;
+            // converged DD values (remove if not used anymore, used for development)
 
-            //- Predict X, Y and Z fields. This should be switched off for 2D cases.
-            const Switch predictZ_;
+            void recordSigma(fileName fName)
+            {
+                volSymmTensorField sigmaToWrite(
+                    IOobject(
+                        fName,
+                        runTime().timeName(),
+                        runTime(),
+                        IOobject::NO_READ,
+                        IOobject::AUTO_WRITE),
+                    sigma());
+                sigmaToWrite.write();
+            }
 
-            // //List of scaling means and std deviations (input data | output data)
-            List<vector> kerasScalingMeans_;
-            List<vector> kerasScalingStds_;
+            void recordD(fileName fName)
+            {
+                vectorIOField DToWrite(
+                    IOobject(
+                        fName,
+                        runTime().timeName(),
+                        runTime(),
+                        IOobject::NO_READ,
+                        IOobject::AUTO_WRITE),
+                    D());
+                DToWrite.write();
+            }
 
             // Private Member Functions
 
@@ -214,13 +233,14 @@ namespace Foam
             // - Write Displacement for each iteration
             virtual void writeDisplacementIteration(int iteration, bool converged);
 
+            // - Write Residual field for each iteration
+            virtual void writeResidualIteration(int iteration, vectorField residualD);
+
             // - Write Displacement for prediction iteration
             virtual void writePredictedDField();
 
-            // - Write Displacement for prediction iteration
-            virtual void writeResidualFile(int iteration);
-
-            virtual void writeCellDisplacementList(int iteration);
+            // - Calculate Residual Field
+            // virtual void calculateResidualField();
 
             // // - write residual field
             // virtual void writeResidualField(int iCorr);
@@ -244,4 +264,4 @@ namespace Foam
 
 #endif
 
-// ********************************j***************************************** //
+// ************************************************************************* //

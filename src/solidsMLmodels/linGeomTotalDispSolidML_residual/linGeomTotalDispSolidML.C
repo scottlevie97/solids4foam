@@ -74,10 +74,7 @@ namespace Foam
               impK_(mechanical().impK()),
               impKf_(mechanical().impKf()),
               rImpK_(1.0 / impK_),
-              predictor_(solidModelDict().lookupOrDefault<Switch>("predictor", Switch(false))),
-              indivResidualFilePtr_(),
-              writeIndivResidualFile_(
-                  solidModelDict().lookupOrDefault<Switch>("writeIndivResidualFile", Switch(false))),
+              predictor_(solidModelDict().lookupOrDefault<Switch>("predictor", false)),
               machineLearning_(
                   solidModelDict().lookupOrDefault<Switch>("machineLearning", Switch(false))),
               machinePredictorIter_(
@@ -87,20 +84,16 @@ namespace Foam
               convergedCase_(
                   solidModelDict().lookupOrDefault<fileName>("convergedCase", "../plateHoleTotalDisp")),
               prevCellD_(),
+              prevCellR_(),
               testConverged_(
                   solidModelDict().lookupOrDefault<Switch>("testConverged", Switch(false))),
+              tracBcIter_(
+                  solidModelDict().lookupOrDefault<scalar>("tracBcIter", 50)),
               BCloopCorrFile_(),
-              writeCellDisplacement_(
-                  solidModelDict().lookupOrDefault<Switch>("writeCellDisplacement", Switch(false))),
-              cellDisplacementFile_(),
               writeDisplacementField_(
                   solidModelDict().lookupOrDefault<Switch>("writeDisplacementField", Switch(false))),
               writeDisplacementLimit_(
-                  solidModelDict().lookupOrDefault<scalar>("writeDisplacementLimit", 20)),
-              useCoordinates_(
-                  solidModelDict().lookupOrDefault<Switch>("useCoordinates", false)),
-              predictZ_(
-                  solidModelDict().lookupOrDefault<Switch>("predictZ", true))
+                  solidModelDict().lookupOrDefault<scalar>("writeDisplacementLimit", 20))
         {
             DisRequired();
 
@@ -111,15 +104,6 @@ namespace Foam
             D().correctBoundaryConditions();
             D().storePrevIter();
             mechanical().grad(D(), gradD());
-
-            if (Pstream::master() && writeIndivResidualFile_)
-            {
-                Info << "Creating residualTime.dat" << endl;
-                indivResidualFilePtr_.set(
-                    new OFstream(runTime.path() / "residualIndividual.dat"));
-                indivResidualFilePtr_()
-                    << "Res_x Res_y Res_z" << endl;
-            }
 
             if (predictor_)
             {
@@ -146,7 +130,6 @@ namespace Foam
                 // Load Scaling values
                 kerasScalingMeans_ = List<vector>(
                     solidModelDict().lookup("kerasScalingMeans"));
-
                 kerasScalingStds_ = List<vector>(
                     solidModelDict().lookup("kerasScalingStds"));
 
@@ -165,42 +148,28 @@ namespace Foam
                         new vectorField(Dsize, vector::zero) // hard coding workaround
                     );
                 }
-            }
+
+                prevCellR_.setSize(machinePredictorIter_);
+
+                forAll(prevCellR_, iterI)
+                {
+                    prevCellR_.set(
+                        iterI,
+                        new vectorField(Dsize, vector::zero) // hard coding workaround
+                    );
+                }
+
+           }
 
             // Initiate BC Correction Loop File
+
             if (Pstream::master())
             {
                 Info << "Creating BCloopCorr.dat" << endl;
-                BCloopCorrFile_.set
-                (
-                    new OFstream(runTime.path() / "BCloopCorr.dat")
-                );
-
-                BCloopCorrFile_() 
-                << "Time" << tab 
-                << "Converged residual " << tab 
-                << "BCloopCorr" << endl;
-            }
-
-            // Initiate Cell List File
-            if (writeCellDisplacement_)
-            {
-                cellList_ = List<scalar>(
-                    solidModelDict().lookup("cellList"));
-
-                if (Pstream::master())
-                {
-                    Info << "Creating writeCellDisplacement.dat" << endl;
-                    cellDisplacementFile_.set(
-                        new OFstream(runTime.path() / "CellDisplacement.dat"));
-
-                    forAll(cellList_, cell)
-                    {
-                        cellDisplacementFile_() << cellList_[cell] << tab << "X" << tab << "Y" << tab << "Z" << tab;
-                    };
-
-                    cellDisplacementFile_() << endl;
-                }
+                BCloopCorrFile_.set(
+                    new OFstream(runTime.path() / "BCloopCorr.dat"));
+                BCloopCorrFile_()
+                    << "Time" << tab << "Converged residual " << tab << "BCloopCorr" << endl;
             }
 
             // OFstream BCloopCorrFile("BCloopCorr.dat");
@@ -218,6 +187,9 @@ namespace Foam
                 predict();
             }
 
+            // Initialise residual
+            residualD = (D().internalField())*1;
+
             // Mesh update loop
             do
             {
@@ -230,33 +202,19 @@ namespace Foam
                 blockLduMatrix::debug = 0;
 #endif
 
-                if (useCoordinates_)
-                {
-                    // Write cell centre coordinates
-
-                    vectorIOField dataToWrite(
-                        IOobject(
-                            "cellCentres",
-                            runTime().timeName(),
-                            runTime(),
-                            IOobject::NO_READ,
-                            IOobject::AUTO_WRITE),
-                        mesh().C());
-
-                    dataToWrite.write();
-                }
-
                 Info << "Solving the momentum equation for D" << endl;
 
                 // Momentum equation loop
                 do
                 {
-
+                    
                     // Store previous D fields
                     if (machineLearning_ && iCorr > 0 && iCorr < prevCellD_.size() + 1)
                     {
                         prevCellD_[iCorr - 1] = D();
+                        prevCellR_[iCorr - 1] = residualD;
                     }
+
 
                     // Store fields for under-relaxation and residual calculation
                     D().storePrevIter();
@@ -326,6 +284,18 @@ namespace Foam
                     // Calculate the stress using run-time selectable mechanical law
                     mechanical().correct(sigma());
 
+                    // Calculate Residual Field
+                    // calculateResidualField();
+
+                    scalar denom = gMax(mag(D().internalField() - D().oldTime().internalField()));
+                        
+                    if (denom < SMALL)
+                    {
+                        denom = max(gMax(mag(D().internalField())), SMALL);
+                    }
+
+                    residualD = (D() - D().prevIter())/denom;
+
                     // Update impKf to improve convergence
                     // Note: impK and rImpK are not updated as they are used for
                     // traction boundaries
@@ -338,18 +308,9 @@ namespace Foam
                     if (writeDisplacementField_ && (iCorr < writeDisplacementLimit_))
                     {
                         writeDisplacementIteration(iCorr, false);
+                        writeResidualIteration(iCorr, residualD);
                     }
-
-                    if (writeIndivResidualFile_)
-                    {
-                        writeResidualFile(iCorr);
-                    }
-
-                    if (writeCellDisplacement_)
-                    {
-                        writeCellDisplacementList(iCorr);
-                    }
-
+                    
                 } while (
                     !converged(
                         iCorr,
@@ -366,6 +327,9 @@ namespace Foam
                 // Write final iteration displacement
                 writeDisplacementIteration(iCorr, true);
                 writeDisplacementIteration(iCorr, false);
+
+                // Calculate final residual and write
+                writeResidualIteration(iCorr, residualD);
 
                 // Interpolate cell displacements to vertices
                 mechanical().interpolate(D(), pointD());
@@ -434,19 +398,12 @@ namespace Foam
 
             forAll(D(), cellI)
             {
-                int inputSize;
+                // auto inputFoam = vectorField(machinePredictorIter_, vector::zero);
+                auto inputFoam = vectorField(machinePredictorIter_*2, vector::zero);
 
-                if (!useCoordinates_)
-                {
-                    inputSize = machinePredictorIter_;
-                }
-                else if (useCoordinates_)
-                {
-                    inputSize = machinePredictorIter_ + 1;
-                }
+                // auto scaledInput = vectorField(machinePredictorIter_-1, vector::zero);
 
-                auto inputFoam = vectorField(inputSize, vector::zero);
-                const int inputVectorSize = (inputSize)*3;
+                const int inputVectorSize = (machinePredictorIter_*2)*3;
 
                 std::vector<double> scaledInput(
                     inputVectorSize, 0);
@@ -460,14 +417,15 @@ namespace Foam
                     scaledInput[iterI * 3 + 2] = scale(inputFoam[iterI].z(), kerasScalingMeans_[iterI].z(), kerasScalingStds_[iterI].z());
                 }
 
-                // Add coordinate:
-                if (useCoordinates_)
+                forAll(prevCellR_, iterI)
                 {
-                    int coord_loc = machinePredictorIter_;
-                    inputFoam[coord_loc] = mesh().C()[cellI];
-                    scaledInput[coord_loc * 3] = scale(inputFoam[coord_loc].x(), kerasScalingMeans_[coord_loc].x(), kerasScalingStds_[coord_loc].x());
-                    scaledInput[coord_loc * 3 + 1] = scale(inputFoam[coord_loc].y(), kerasScalingMeans_[coord_loc].y(), kerasScalingStds_[coord_loc].y());
-                    scaledInput[coord_loc * 3 + 2] = scale(inputFoam[coord_loc].z(), kerasScalingMeans_[coord_loc].z(), kerasScalingStds_[coord_loc].z());
+                    int index = iterI + machinePredictorIter_;
+
+                    inputFoam[index] = prevCellR_[iterI][cellI]; // prevCellD_ contains a value for iteration 0 (which is full of zeros)
+
+                    scaledInput[index * 3] = scale(inputFoam[index].x(), kerasScalingMeans_[index].x(), kerasScalingStds_[index].x());
+                    scaledInput[index * 3 + 1] = scale(inputFoam[index].y(), kerasScalingMeans_[index].y(), kerasScalingStds_[index].y());
+                    scaledInput[index * 3 + 2] = scale(inputFoam[index].z(), kerasScalingMeans_[index].z(), kerasScalingStds_[index].z());
                 }
 
                 const auto prediction = model.predict //_single_output
@@ -484,29 +442,20 @@ namespace Foam
 
                 const std::vector<double> result =
                     {
-                        invScale(scaledResult[0], kerasScalingMeans_[inputSize][0], kerasScalingStds_[inputSize][0]),
-                        invScale(scaledResult[1], kerasScalingMeans_[inputSize][1], kerasScalingStds_[inputSize][1]),
-                        invScale(scaledResult[2], kerasScalingMeans_[inputSize][2], kerasScalingStds_[inputSize][2]),
+                        invScale(scaledResult[0], kerasScalingMeans_[machinePredictorIter_*2][0], kerasScalingStds_[machinePredictorIter_*2][0]),
+                        invScale(scaledResult[1], kerasScalingMeans_[machinePredictorIter_*2][1], kerasScalingStds_[machinePredictorIter_*2][1]),
+                        invScale(scaledResult[2], kerasScalingMeans_[machinePredictorIter_*2][2], kerasScalingStds_[machinePredictorIter_*2][2]),
                     };
-
-                
 
                 // Copy the result back into an OpenFOAM array
                 D()
                 [cellI].x() = result[0];
                 D()
                 [cellI].y() = result[1];
-
-                if (predictZ_)
-                {
-                    // D()
-                    // [cellI].z() = result[2];
-                }
+                D()
+                [cellI].z() = result[2];
 
             }
-
-            writePredictedDField();
-
         }
 
         void linGeomTotalDispSolidML::updateD_testConverged()
@@ -634,7 +583,33 @@ namespace Foam
                         IOobject::AUTO_WRITE),
                     D());
                 dataToWrite.write();
+
             }
+        }
+
+        void linGeomTotalDispSolidML::writeResidualIteration(int iteration, vectorField residualD)
+        {
+            
+            // scalar denom =
+            //     gMax(mag(D().internalField() - D().oldTime().internalField()));
+                
+            // if (denom < SMALL)
+            // {
+            //     denom = max(gMax(mag(D().internalField())), SMALL);
+            // }
+            
+            vectorIOField dataToWrite(
+                IOobject(
+                    "residualD_iteration" + Foam::name(iteration),
+                    runTime().timeName(),
+                    runTime(),
+                    IOobject::NO_READ,
+                    IOobject::AUTO_WRITE),
+                residualD);
+
+
+            dataToWrite.write();      
+
         }
 
         void linGeomTotalDispSolidML::writePredictedDField()
@@ -653,54 +628,20 @@ namespace Foam
             D_predicted_write.write();
         }
 
-        // Writes individual residual for each direction
-        void linGeomTotalDispSolidML::writeResidualFile(int iteration)
-        {
+        // void linGeomTotalDispSolidML::calculateResidualField()
+        // {
+        //     scalar denom =
+        //         gMax(mag(D().internalField() - D().oldTime().internalField()));
+                
+        //     if (denom < SMALL)
+        //     {
+        //         denom = max(gMax(mag(D().internalField())), SMALL);
+        //     }
 
-            vectorField residualD = D() - D().prevIter();
+        //     vectorField residualD = (D() - D().prevIter())/denom;
 
-            auto res_x = scalarField(residualD.size(), 0);
-            auto res_y = scalarField(residualD.size(), 0);
-            auto res_z = scalarField(residualD.size(), 0);
-
-            forAll(res_x, cell)
-            {
-                res_x[cell] = sqrt(pow(residualD[cell][0], 2));
-                res_y[cell] = sqrt(pow(residualD[cell][1], 2));
-                res_z[cell] = sqrt(pow(residualD[cell][2], 2));
-            };
-
-            auto denom_x = scalarField(D().size(), 0);
-            auto denom_y = scalarField(D().size(), 0);
-            auto denom_z = scalarField(D().size(), 0);
-
-            forAll(denom_x, cell)
-            {
-                denom_x[cell] = sqrt(pow(D()[cell][0], 2));
-                denom_y[cell] = sqrt(pow(D()[cell][1], 2));
-                denom_z[cell] = sqrt(pow(D()[cell][2], 2));
-            };
-
-            scalar res_x_final = max(res_x) / (max(denom_x) + SMALL);
-            scalar res_y_final = max(res_y) / (max(denom_y) + SMALL);
-            scalar res_z_final = max(res_z) / (max(denom_z) + SMALL);
-
-            indivResidualFilePtr_() << res_x_final << tab << res_y_final << tab << res_z_final << endl;
-        }
-
-        void linGeomTotalDispSolidML::writeCellDisplacementList(int iteration)
-        {
-
-            if (Pstream::master())
-            {
-                forAll(cellList_, cell)
-                {
-                    cellDisplacementFile_() << iteration << tab << D()[cellList_[cell]][0] << tab << D()[cellList_[cell]][1] << tab << D()[cellList_[cell]][2] << tab;
-                };
-
-                cellDisplacementFile_() << endl;
-            }
-        }
+        //     // Info<< "residualD : " << residualD << endl;
+        // }
 
         // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
