@@ -1,0 +1,29 @@
+#!/bin/bash
+
+cd coarse_mesh/plateHole 
+
+./Allclean
+
+cd ../plateHole_ML 
+
+./Allclean
+
+cd ../../fine_mesh/plateHole
+
+./Allclean
+
+cd ../plateHole_ML 
+
+./Allclean
+
+cd ../plateHole_mapFields
+
+./Allclean
+
+cd ../plateHole_testConverged
+
+./Allclean
+
+cd ../../machine_learning
+
+./Allclean
