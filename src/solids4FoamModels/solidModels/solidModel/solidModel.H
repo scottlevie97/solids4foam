@@ -215,6 +215,9 @@ class solidModel
         //  Write out all fields required for a consistent restart
         const Switch restart_;
 
+        //- Store rho*d2d2t(D) for efficiency
+        mutable autoPtr<volVectorField> rhoD2dt2DPtr_;
+
 
     // Private Member Functions
 
@@ -357,6 +360,12 @@ protected:
         {
             return stabilisationPtr_();
         }
+
+        //- Make rhoD2dt2D
+        void makeRhoD2dt2D() const;
+
+        //- Return non-const access to rhoD2dt2D
+        volVectorField& rhoD2dt2D() const;
 
 
 public:

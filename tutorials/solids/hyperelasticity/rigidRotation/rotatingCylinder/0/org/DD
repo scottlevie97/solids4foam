@@ -11,43 +11,35 @@ FoamFile
 {
     version     2.0;
     format      ascii;
-    class       dictionary;
-    object      controlDict;
+    class       volVectorField;
+    location    "0";
+    object      DD;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-application stressFoam;
+dimensions      [0 1 0 0 0 0 0];
 
-startFrom       latestTime;
+internalField   uniform (0 0 0);
 
-startTime       0;
+boundaryField
+{
+    cylinder
+    {
+        type            fixedRotation;
+        rotationAngleSeries
+        {
+            "fileName|file"        "$FOAM_CASE/constant/timeVsAngle";
+            outOfBounds     clamp;
+        }
+        rotationAxis     ( 0 0 1 );
+        rotationOrigin   ( 0 0 0 );
+        value            uniform   ( 0 0 0 );
+    }
 
-stopAt          endTime;
-
-endTime         5;
-
-deltaT          1e-3;
-
-writeControl    timeStep;
-
-writeInterval   10;
-
-purgeWrite      0;
-
-writeFormat     ascii;
-
-writePrecision  6;
-
-writeCompression uncompressed;
-
-timeFormat      general;
-
-timePrecision   6;
-
-runTimeModifiable yes;
-
-adjustTimeStep  no;
-
-maxCo           0.2;
+    frontAndBackPlanes
+    {
+        type empty;
+    }
+}
 
 // ************************************************************************* //

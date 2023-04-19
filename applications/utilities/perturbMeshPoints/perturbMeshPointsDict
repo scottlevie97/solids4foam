@@ -11,32 +11,15 @@ FoamFile
 {
     version     2.0;
     format      ascii;
-    class       pointVectorField;
-    object      pointD;
+    class       dictionary;
+    object      perturbMeshPointsDict;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-dimensions      [0 1 0 0 0 0 0];
+seed        1;
 
-internalField   uniform (0 0 0);
+scaleFactor (5e-3 5e-3 0);
 
-boundaryField
-{
-    interface
-    {
-        type           calculated;
-        value          uniform (0 0 0);
-    }
-    bottom
-    {
-       type            fixedValue;
-       value           uniform (0 0 0);
-    }
-    symmetry
-    {
-       type            symmetryPlane;
-       value           uniform (0 0 0);
-    }
-}
+Gaussian    no;
 
 // ************************************************************************* //
