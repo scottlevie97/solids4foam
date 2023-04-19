@@ -1,4 +1,0 @@
-#!/bin/bash
-
-python3 /home/scottlevie/foam/scottlevie-4.1/solids4foam/ThirdParty/frugally-deep/keras_export/convert_model.py fdeepTrial.h5 fdeep_model.json
-

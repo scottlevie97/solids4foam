@@ -1,9 +1,0 @@
-#!/bin/bash
-
-rm solidProperties
-
-cd ML_model
-
-./Allclean
-
-./cleanSolidProperties
