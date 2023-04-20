@@ -1,0 +1,17 @@
+#!/bin/bash
+
+python3 -W ignore ANN_model_withInput.py 2>&1 | tee ML.log
+
+##  Clean solidProperties and load scaling
+
+rm solidProperties
+
+cd ML_model
+
+./cleanSolidProperties
+
+python3 scaling.py
+
+mv solidProperties ../solidProperties
+
+./convertFdeep

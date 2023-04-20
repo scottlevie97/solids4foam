@@ -1,0 +1,14 @@
+#!/bin/bash
+
+
+read -r -p "Are you sure you want to remove machine learning model [y/N] " response
+case "$response" in
+    [yY][eE][sS]|[yY]) 
+        \rm -rf  fdeep_model.json fdeepTrial.h5 data.csv scalingData.csv dataScaled.csv *pkl ../solidProperties 
+        ;;
+    *)
+        ;;
+esac
+
+
+
