@@ -1,0 +1,21 @@
+#!/bin/bash
+
+# Copy 0 Directory
+for d in coarse_mesh/* ; do cp -r init/0 "$d"; done
+for d in fine_mesh/* ; do cp -r init/0 "$d"; done
+
+# copy blockMeshDict
+for d in coarse_mesh/* ; do cp -r init/blockMeshDict_coarse "$d"/constant/polyMesh/blockMeshDict; done
+for d in fine_mesh/* ; do cp -r init/blockMeshDict_fine "$d"/constant/polyMesh/blockMeshDict; done
+
+# copy ML solidProperties
+cp init/solidProperties_ML machine_learning/ML_model/solidPropertiesClean 
+
+# copy base solidProperties
+cp init/solidProperties_base coarse_mesh/base/constant/solidProperties
+cp init/solidProperties_base fine_mesh/base/constant/solidProperties
+
+
+# copy testConverged solidProperties
+cp init/solidProperties_testconverged fine_mesh/testConverged/constant/solidProperties 
+
