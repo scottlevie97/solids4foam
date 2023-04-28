@@ -1,7 +1,7 @@
 #!/bin/bash
 
-python3 /home/scottlevie/foam/scottlevie-4.1/solids4foam/ThirdParty/frugally-deep/keras_export/convert_model.py fdeepTrial_1.h5 fdeep_model_1.json
-python3 /home/scottlevie/foam/scottlevie-4.1/solids4foam/ThirdParty/frugally-deep/keras_export/convert_model.py fdeepTrial_2.h5 fdeep_model_2.json
-python3 /home/scottlevie/foam/scottlevie-4.1/solids4foam/ThirdParty/frugally-deep/keras_export/convert_model.py fdeepTrial_3.h5 fdeep_model_3.json
-python3 /home/scottlevie/foam/scottlevie-4.1/solids4foam/ThirdParty/frugally-deep/keras_export/convert_model.py fdeepTrial_4.h5 fdeep_model_4.json
+python3 /home/scott/foam/scott-4.1/solids4foam/ThirdParty/frugally-deep/keras_export/convert_model.py fdeepTrial_1.h5 fdeep_model_1.json
+python3 /home/scott/foam/scott-4.1/solids4foam/ThirdParty/frugally-deep/keras_export/convert_model.py fdeepTrial_2.h5 fdeep_model_2.json
+python3 /home/scott/foam/scott-4.1/solids4foam/ThirdParty/frugally-deep/keras_export/convert_model.py fdeepTrial_3.h5 fdeep_model_3.json
+python3 /home/scott/foam/scott-4.1/solids4foam/ThirdParty/frugally-deep/keras_export/convert_model.py fdeepTrial_4.h5 fdeep_model_4.json
 

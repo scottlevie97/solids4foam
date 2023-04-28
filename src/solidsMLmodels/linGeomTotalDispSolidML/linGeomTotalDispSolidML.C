@@ -499,8 +499,8 @@ namespace Foam
 
                 if (predictZ_)
                 {
-                    // D()
-                    // [cellI].z() = result[2];
+                    D()
+                    [cellI].z() = result[2];
                 }
 
             }
@@ -575,6 +575,8 @@ namespace Foam
             int BCloopCorr = 0;
             scalar residual = 0;
 
+            Info << "solutionTol(): " << solutionTol() << endl;
+
             do
             {
                 D().storePrevIter();
@@ -586,14 +588,13 @@ namespace Foam
 
                 residual =
                     max(
-                        mag(
-                            D() - D().prevIter()))
-                        .value() /
-                    (max(
-                         mag(D()))
-                         .value() +
-                     SMALL // SMALL = 1e-15 (defined by OpenFOAM) - To avoid dividing by zero
+                        mag(D() - D().prevIter())
+                        ).value() 
+                        /
+                    (max
+                        (mag(D())).value() + SMALL // SMALL = 1e-15 (defined by OpenFOAM) - To avoid dividing by zero
                     );
+                    
 
                 if (residual < solutionTol())
                 {
@@ -601,6 +602,9 @@ namespace Foam
                 }
 
                 BCloopCorr = BCloopCorr + 1;
+
+                // Info << "BCloopCorr: " << BCloopCorr << endl;
+                // Info << "residual: " << residual << endl;
 
             } while (!convergedBcTrac);
 
