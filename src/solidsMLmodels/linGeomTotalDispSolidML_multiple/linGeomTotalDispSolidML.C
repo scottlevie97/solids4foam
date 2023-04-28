@@ -216,10 +216,10 @@ namespace Foam
 
             // Residuals where to make predictions
             scalarField predictionResiduals;
-            predictionResiduals = scalarField(3, 0);
-            predictionResiduals[0] = 0.9;
-            predictionResiduals[1] = 0.001;
-            predictionResiduals[2] = 0.00005;
+            predictionResiduals = scalarField(noPredictions, 0);
+            predictionResiduals[0] = 0.1;
+            predictionResiduals[1] = 0.0005;
+            predictionResiduals[2] = 0.00001;
             // predictionResiduals[3] = 0.0001;
 
             // Make prediction is switch is on
@@ -315,6 +315,8 @@ namespace Foam
                         {
                             Info << "iCorr: " << iCorr << endl;
                             Info << "residual_print: " << residual_print << endl;
+                            Info << "predictionCount: " << predictionCount << endl;
+
 
                             // Predict displacement
                             updateD_ML(predictionCount, jsonFiles_[predictionCount - 1]);
