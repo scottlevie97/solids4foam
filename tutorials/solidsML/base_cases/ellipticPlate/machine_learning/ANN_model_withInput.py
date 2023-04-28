@@ -1,5 +1,7 @@
 import os
+
 from settings import *
+
 ####*IMPORANT*: Have to do this line *before* importing tensorflow
 os.environ['PYTHONHASHSEED']=str(randomseed)
 def reset_random_seeds(seed):
@@ -9,7 +11,9 @@ def reset_random_seeds(seed):
    random.seed(seed)
 
 import pickle
+import random
 import timeit
+
 import numpy as np
 import pandas as pd
 import tensorflow as tf
@@ -19,8 +23,6 @@ from matplotlib import pyplot as plt
 from settings import *
 from sklearn.preprocessing import StandardScaler
 from tensorflow import keras
-import random
-
 
 # 2 = INFO and WARNING messages are not printed
 # Stop tensorflow writing messages about improving performance
@@ -202,11 +204,11 @@ if answer_trainOrLoadModel == ("t"):
 
     model = Sequential()
     model.add(Dense(200, input_dim=len(X[0, :]),
-                    activation='relu'))
+                    activation='relu',  kernel_initializer='he_uniform'))
     model.add(Dense(150,
-                    activation='relu'))
+                    activation='relu',  kernel_initializer='he_uniform'))
     model.add(Dense(50,
-                    activation='relu'))
+                    activation='relu',  kernel_initializer='he_uniform'))
     model.add(Dense(3))
 
     model.compile(loss='mean_squared_error', optimizer='adam')
