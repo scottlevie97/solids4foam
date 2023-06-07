@@ -45,4 +45,11 @@ timePrecision   6;
 
 runTimeModifiable no;
 
+libs 
+( 
+    // Library to load from solids4Foam
+    "libsolids4FoamModels.so" 
+);
+
+
 // ************************************************************************* //
