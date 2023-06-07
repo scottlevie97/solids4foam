@@ -1,5 +1,5 @@
 #  Filepath for training case
-filepath1 = "../coarse_mesh/plateHole/"
+filepath1 = "../coarse_mesh/base/"
 
 trainIterations = 20
 Timestepsize = 1
@@ -11,7 +11,7 @@ answer_epochs = 500
 answer_trainOrLoadModel = "t"
 
 # Prints training update (slows down training) 0 = Off,  1 = ON
-verbose_setting = 2
+verbose_setting = 0
 
 # Print training graph
 trainingGraph = False

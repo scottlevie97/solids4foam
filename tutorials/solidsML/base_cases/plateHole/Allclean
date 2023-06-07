@@ -1,29 +1,29 @@
 #!/bin/bash
 
-cd coarse_mesh/plateHole 
+cd coarse_mesh/base
 
 ./Allclean
 
-cd ../plateHole_ML 
+cd ../ML 
 
 ./Allclean
 
-cd ../../fine_mesh/plateHole
+cd ../../fine_mesh/base
 
 ./Allclean
 
-cd ../plateHole_ML 
+cd ../ML 
 
 ./Allclean
 
-cd ../plateHole_mapFields
+cd ../mapFields
 
 ./Allclean
 
-cd ../plateHole_testConverged
+cd ../testConverged
 
 ./Allclean
 
 cd ../../machine_learning
 
-./Allclean
+# ./Allclean

@@ -1,6 +1,8 @@
 j#!/bin/bash
 
-cd coarse_mesh/plateHole 
+CASE_NAME=ellipticPlate
+
+cd coarse_mesh/base
 
 echo -e "\n ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ \n Running Base Case \n ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ \n"
 ./Allrun
@@ -10,30 +12,31 @@ cd ../../machine_learning
 echo -e "\n ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ \n Training machine learning model \n ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ \n"
 ./Allrun
 
-cd ../coarse_mesh/plateHole_ML
+cd ../coarse_mesh/ML
 echo -e "\n ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ \n Running Base Case sanity check\n ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ \n"
 ./Allrun
 
 
-cd ../../fine_mesh/plateHole_ML
-
-echo -e "\n ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ \n Running fine mesh case using ML \n ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ \n"
-./Allrun
-
-cd ../plateHole
+cd ../../fine_mesh/ML
 
 echo -e "\n ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ \n Running fine mesh case without ML for comparison \n ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ \n"
 ./Allrun
 
-cd ../plateHole_mapFields
+cd ../mapFields
 
 echo -e "\n ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ \n Running mapFields \n ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ \n"
 ./Allrun
 
-cd ../plateHole_testConverged
+cd ../base
+
+echo -e "\n ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ \n Running fine mesh case using ML \n ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ \n"
+./Allrun
+
+cd ../testConverged
 
 echo -e "\n ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ \n Running testConverged \n ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ \n"
 ./Allrun
+
 
 
 
