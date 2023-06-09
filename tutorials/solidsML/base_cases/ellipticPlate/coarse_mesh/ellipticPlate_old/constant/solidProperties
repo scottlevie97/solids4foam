@@ -25,27 +25,16 @@ solidModel     linearGeometryTotalDisplacementML;
     residualFile yes;
 
     // Predict displacement
-    machineLearning yes;
+    machineLearning no;
+
+    // Write displacement field at each iteration
+    writeDisplacementField yes;
 
     // Write time for each iteration
     iterationTimeFile yes;
 
-    // Predict displacement in the z-direction
-
-    jsonFile "../../machine_learning/ML_model/fdeep_model.json";
-
-	iterationToApplyMachineLearningPredictor ; 
-
-    kerasScalingMeans
-    (
-
-    );
-
-    kerasScalingStds
-    (
-
-    );
-
+    // Write D field up until this iteration
+    writeDisplacementLimit 20;
 
     // Maximum number of momentum correctors
     nCorrectors     100000;

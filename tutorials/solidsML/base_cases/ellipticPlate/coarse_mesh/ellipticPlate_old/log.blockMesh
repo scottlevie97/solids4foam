@@ -1,0 +1,81 @@
+/*---------------------------------------------------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | foam-extend: Open Source CFD                    |
+|  \\    /   O peration     | Version:     4.1                                |
+|   \\  /    A nd           | Web:         http://www.foam-extend.org         |
+|    \\/     M anipulation  | For copyright notice see file Copyright         |
+\*---------------------------------------------------------------------------*/
+Build  : 4.1-70b064d0f326
+Exec   : blockMesh
+Date   : Jun 07 2023
+Time   : 11:15:57
+Host   : "cal"
+PID    : 1797
+CtrlDict : "/media/scott/Seagate Basic/solids4foam/tutorials/solidsML/base_cases/ellipticPlate/coarse_mesh/ellipticPlate/system/controlDict"
+Case   : /media/scott/Seagate Basic/solids4foam/tutorials/solidsML/base_cases/ellipticPlate/coarse_mesh/ellipticPlate
+nProcs : 1
+sigFpe : Enabling floating point exception trapping (FOAM_SIGFPE).
+allowSystemOperations : Disallowing user-supplied system call operations
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+Create time
+
+
+Creating block mesh from
+    "/media/scott/Seagate Basic/solids4foam/tutorials/solidsML/base_cases/ellipticPlate/coarse_mesh/ellipticPlate/constant/polyMesh/blockMeshDict"
+
+Creating curved edges
+Creating topology blocks
+Creating topology patches
+
+Reading patches section
+
+Creating block mesh topology
+
+Reading physicalType from existing boundary file
+
+Default patch type set to empty
+
+Check topology
+
+	Basic statistics
+		Number of internal faces : 0
+		Number of boundary faces : 6
+		Number of defined boundary faces : 6
+		Number of undefined boundary faces : 0
+	Checking patch -> block consistency
+
+Creating block offsets
+Creating merge list .
+
+Creating polyMesh from blockMesh
+Creating patches
+Creating cells
+Creating points with scale 1
+    Block 0 cell size :
+        i : 0.220288533657 .. 0.0996185817373
+        j : 0.108671103762 .. 0.26081064903
+        k : 0.0857142857143 .. 0.0857142857143
+
+
+Writing polyMesh
+----------------
+Mesh Information
+----------------
+  boundingBox: (0 0 0) (3.25 2.75 0.6)
+  nPoints: 1408
+  nCells: 1050
+  nFaces: 3475
+  nInternalFaces: 2825
+----------------
+Patches
+----------------
+  patch 0 (start: 2825 size: 105) name: outside
+  patch 1 (start: 2930 size: 70) name: symmx
+  patch 2 (start: 3000 size: 70) name: symmy
+  patch 3 (start: 3070 size: 105) name: inside
+  patch 4 (start: 3175 size: 150) name: top
+  patch 5 (start: 3325 size: 150) name: bottom
+
+End
+

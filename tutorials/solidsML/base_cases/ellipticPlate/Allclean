@@ -12,7 +12,7 @@ cd ../"$CASE_NAME"_ML
 
 cd ../../fine_mesh/$CASE_NAME
 
-./Allclean
+# ./Allclean
 
 cd ../"$CASE_NAME"_ML 
 
@@ -28,4 +28,4 @@ cd ../"$CASE_NAME"_testConverged
 
 cd ../../machine_learning
 
-./Allclean
+# ./Allclean

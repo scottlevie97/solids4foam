@@ -12,6 +12,8 @@ solids4Foam::convertCaseFormat .
 # Create mesh
 solids4Foam::runApplication blockMesh
 
+./mapFields
+
 # Run solver
 if [[ "${1}" -gt 1 ]]
 then

@@ -6,10 +6,14 @@
 # Source solids4Foam scripts
 source solids4FoamScripts.sh
 
+# Copy og directory
+rm -r 0
+cp -r 0_org 0
+
 cleanCase
 \rm -f constant/polyMesh/boundary case.foam
 \rm -rf system/*Subset constant/*Subset postProcessing
-\rm *.dat 
+\rm residual.dat BCloopCorr.dat
 \rm *.foam
 
 # Convert case version to FOAM EXTEND

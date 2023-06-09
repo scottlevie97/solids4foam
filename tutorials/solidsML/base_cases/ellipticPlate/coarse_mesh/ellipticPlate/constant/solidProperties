@@ -34,7 +34,7 @@ solidModel     linearGeometryTotalDisplacementML;
     iterationTimeFile yes;
 
     // Write D field up until this iteration
-    writeDisplacementLimit 20;
+    writeDisplacementLimit 120;
 
     // Maximum number of momentum correctors
     nCorrectors     100000;

@@ -1,0 +1,76 @@
+/*---------------------------------------------------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | foam-extend: Open Source CFD                    |
+|  \\    /   O peration     | Version:     4.1                                |
+|   \\  /    A nd           | Web:         http://www.foam-extend.org         |
+|    \\/     M anipulation  | For copyright notice see file Copyright         |
+\*---------------------------------------------------------------------------*/
+Build  : 4.1-70b064d0f326
+Exec   : solids4Foam
+Date   : Jun 07 2023
+Time   : 11:15:57
+Host   : "cal"
+PID    : 1798
+CtrlDict : "/media/scott/Seagate Basic/solids4foam/tutorials/solidsML/base_cases/ellipticPlate/coarse_mesh/ellipticPlate/system/controlDict"
+Case   : /media/scott/Seagate Basic/solids4foam/tutorials/solidsML/base_cases/ellipticPlate/coarse_mesh/ellipticPlate
+nProcs : 1
+sigFpe : Enabling floating point exception trapping (FOAM_SIGFPE).
+allowSystemOperations : Disallowing user-supplied system call operations
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+Create time
+
+/*---------------------------------------------------------------------------*\
+|    For further information on the solids4Foam toolbox implementations,      |
+|    please see the following publications:                                   |
+|                                                                             |
+|    P. Cardiff, A Karac, P. De Jaeger, H. Jasak, J. Nagy, A. Ivankovic,      |
+|    Z. Tukovic: An open-source finite volume toolbox for solid mechanics and |
+|    fluid-solid interaction simulations. arXiv:1808.10736v2, 2018, available |
+|    at https://arxiv.org/abs/1808.10736.                                     |
+|                                                                             |
+|    Z. Tukovic, A. Karac, P. Cardiff, H. Jasak, A. Ivankovic: OpenFOAM       |
+|    finite volume solver for fluid-solid interaction.  Transactions of       |
+|    Famena, 42 (3), pp. 1-31, 2018, 10.21278/TOF.42301.                      |
+\*---------------------------------------------------------------------------*/
+
+Selecting physicsModel solidModel
+Selecting solidModel linearGeometryTotalDisplacementML
+Selecting dynamicFvMesh staticFvMesh
+Creating fixedDisplacement boundary condition
+Creating solidTraction boundary condition
+Creating solidTraction boundary condition
+Creating solidTraction boundary condition
+    under-relaxation method: fixed
+Creating residual.dat
+Creating iterationTime.dat
+Creating the mechanicalModel
+Selecting mechanical law linearElastic
+Creating BCloopCorr.dat
+Time = 1
+
+Evolving solid solver
+Solving the momentum equation for D
+setCellDisplacements: reading cellDisplacements
+    Corr, res, relRes, matRes, iters
+    100, 0.00197707228296, 0.00400639270245, 0, 0
+    200, 0.000380157138875, 0.000794471299565, 0, 0
+    300, 8.5397666238e-05, 0.000179227311479, 0, 0
+    400, 1.97886243818e-05, 4.15500788529e-05, 0, 0
+    500, 4.61725213273e-06, 9.69497729414e-06, 0, 0
+    600, 1.07903606431e-06, 2.26565774124e-06, 0, 0
+    700, 2.52258654015e-07, 5.29666151712e-07, 0, 0
+    800, 5.89783647757e-08, 1.23836362107e-07, 0, 0
+    900, 1.38207555708e-08, 2.89952229086e-08, 0, 0
+    1000, 3.07157198641e-09, 4.41704352516e-09, 0, 0
+    The relative residual has converged
+    1027, 9.70192849848e-10, 0, 0, 0
+Max epsilonEq = 4.3304622744e-05
+Max sigmaEq (von Mises stress) = 9993374.47939
+ExecutionTime = 2.97 s  ClockTime = 3 s
+
+The momentum equation converged in all time-steps
+
+
+End
+
