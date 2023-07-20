@@ -1,9 +1,0 @@
-#!/bin/bash
-
-cd ML_model
-
-./Allclean
-
-./cleanSolidProperties
-
-rm *.csv
