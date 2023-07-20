@@ -101,7 +101,9 @@ namespace Foam
               useCoordinates_(
                   solidModelDict().lookupOrDefault<Switch>("useCoordinates", false)),
               predictZ_(
-                  solidModelDict().lookupOrDefault<Switch>("predictZ", true))
+                  solidModelDict().lookupOrDefault<Switch>("predictZ", true)),
+              noPredictions_(
+                  solidModelDict().lookupOrDefault<scalar>("noPredictions", 1))
         {
             DisRequired();
 
@@ -140,6 +142,14 @@ namespace Foam
                         << ") scheme should not be 'steadyState'!" << abort(FatalError);
                 }
             }
+
+            // if (writeDisplacementField_)
+            // {
+            predictionResiduals_ = List<scalar>(solidModelDict().lookup("predictionResiduals"));
+            // }
+
+        
+
 
             if (machineLearning_)
             {
@@ -211,9 +221,10 @@ namespace Foam
         bool linGeomTotalDispSolidML::evolve()
         {
             int startIter = 0;
-            int noPredictions = 3;
             int predictionCount = 0;
 
+<<<<<<< HEAD
+=======
             // Residuals where to make predictions
             scalarField predictionResiduals;
             predictionResiduals = scalarField(noPredictions, 0);
@@ -222,6 +233,7 @@ namespace Foam
             predictionResiduals[2] = 0.00001;
             // predictionResiduals[3] = 0.0001;
 
+>>>>>>> 09c36566bec91c4e787c9187d8c85a198214d9e0
             // Make prediction is switch is on
             bool predictionSwitch = false;
 
@@ -269,29 +281,39 @@ namespace Foam
                     // Check if residual is less that predction residual
                     // If it is change prediction count
 
-                    // THIS IS THE WRONG RESIDUAL TO USE
                     scalar residual_print = residualvf();
-                    // Info <<  "residualvf(): " << residualvf() << endl;
 
-                    if ((residualvf() < predictionResiduals[predictionCount]) && (iCorr > 0))
+                    // The first residual when iCorr=0 is 0
+                    // Using this method will never use the resiudal when iCorr=0
+                    // This is why the results will be different to linGeomTotatlDispSolidML/linGeomTotatlDispSolidML.C
+                    if (predictionCount < noPredictions_ )
                     {
-                        Info << "At iteration: " << iCorr << " residual: " << residual_print
-                             << " is less that predictrion residual: " << predictionResiduals[predictionCount] << endl;
-
-                        if (predictionCount < noPredictions + 1)
+                        if ((residualvf() < predictionResiduals_[predictionCount]) && (iCorr > 0))
                         {
+                            Info << "At iteration: " << iCorr << " residual: " << residual_print
+                                << " is less that prediction residual: " << predictionResiduals_[predictionCount] << endl;
+
+                            // How many prediction have been made
                             predictionCount = predictionCount + 1;
+                            // Switch to gather displacement fields
                             predictionSwitch = true;
+                            // Iteration to start collecting data
                             startIter = iCorr;
+
+                            Info << "Starting iteration is: " << startIter << endl;
                         }
                     }
+
 
                     if (predictionSwitch)
                     {
                         // Store previous D fields
-                        if (machineLearning_ && iCorr > startIter && iCorr < prevCellD_.size() + 1 + startIter)
+                        // SL 6/6/23: 
+                        // iCorr > startIter - 1  Is to ALLOW FOR CUURENT ITERATION TO BE USE
+                        if (machineLearning_ && iCorr >= startIter  && iCorr < prevCellD_.size() + startIter) 
+                        // if (machineLearning_ && iCorr > startIter && iCorr < prevCellD_.size() + 1 + startIter) 
                         {
-                            prevCellD_[iCorr - 1 - startIter] = D();
+                            prevCellD_[iCorr - startIter] = D();
                         }
 
                         Info << "Adding D from iteration " << iCorr << " for residual " << residual_print << endl;
@@ -300,6 +322,7 @@ namespace Foam
                     // Store fields for under-relaxation and residual calculation
                     D().storePrevIter();
 
+                    // if (iCorr == machinePredictorIter_ + startIter -1 && predictionSwitch)
                     if (iCorr == machinePredictorIter_ + startIter && predictionSwitch)
                     {
                         Info << machinePredictorIter_ << "  " << startIter << endl;
@@ -419,7 +442,7 @@ namespace Foam
                     ++iCorr < nCorr());
 
                 // Write final iteration displacement
-                for (int i = 1; i < noPredictions + 1; i++)
+                for (int i = 1; i < noPredictions_ + 1; i++)
                 {
                     writeDisplacementIteration(i, iCorr, false);
                     ;

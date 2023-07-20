@@ -95,7 +95,7 @@ namespace Foam
             const int machinePredictorIter_;
 
             //- JSON file name
-            List<fileName> jsonFiles_;
+            fileName jsonFile_;
 
             //- Converged case path for test convergence
             fileName convergedCase_;
@@ -128,15 +128,12 @@ namespace Foam
             //- Predict X, Y and Z fields. This should be switched off for 2D cases.
             const Switch predictZ_;
 
-            // The amount of predictions
-            scalar noPredictions_;
+            // Switch to print all displacement fields for postprocessing
+            const Switch writeAllDisplacmentFields_;
 
             // //List of scaling means and std deviations (input data | output data)
             List<vector> kerasScalingMeans_;
             List<vector> kerasScalingStds_;
-
-            // The residuals where the predicitons will begin to collect data
-            List<scalar> predictionResiduals_;
 
             // Private Member Functions
 
@@ -206,7 +203,7 @@ namespace Foam
             virtual bool evolve();
 
             //- Set D using machine learning predictor
-            virtual void updateD_ML(int predictionCount, fileName jsonFile);
+            virtual void updateD_ML();
 
             // - Set D using machine learning predictor
             virtual void updateD_testConverged();
@@ -218,7 +215,7 @@ namespace Foam
             virtual void BoundaryTractionLoop();
 
             // - Write Displacement for each iteration
-            virtual void writeDisplacementIteration(int predictionCount, int iter, bool converged);
+            virtual void writeDisplacementIteration(int iteration, bool converged);
 
             // - Write Displacement for prediction iteration
             virtual void writePredictedDField();
@@ -236,10 +233,6 @@ namespace Foam
                 const vectorField &traction,
                 const scalarField &pressure,
                 const fvPatch &patch) const;
-
-            scalar residualvf();
-
-
         };
 
         // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

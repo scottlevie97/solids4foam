@@ -100,7 +100,9 @@ namespace Foam
               useCoordinates_(
                   solidModelDict().lookupOrDefault<Switch>("useCoordinates", false)),
               predictZ_(
-                  solidModelDict().lookupOrDefault<Switch>("predictZ", true))
+                  solidModelDict().lookupOrDefault<Switch>("predictZ", true)),
+              writeAllDisplacmentFields_(
+                  solidModelDict().lookupOrDefault<Switch>("writeAllDisplacmentFields", false))
         {
             DisRequired();
 
@@ -213,6 +215,17 @@ namespace Foam
         {
             Info << "Evolving solid solver" << endl;
 
+            vectorIOField dataToWrite(
+                IOobject(
+                    "cellCentres",
+                    runTime().timeName(),
+                    runTime(),
+                    IOobject::NO_READ,
+                    IOobject::AUTO_WRITE),
+                mesh().C());
+
+            dataToWrite.write();
+
             if (predictor_)
             {
                 predict();
@@ -281,12 +294,7 @@ namespace Foam
 
                     // Linear momentum equation total displacement form
                     fvVectorMatrix DEqn(
-                        rho() * fvm::d2dt2(D()) 
-                        == fvm::laplacian(impKf_, D(), "laplacian(DD,D)") 
-                        - fvc::laplacian(impKf_, D(), "laplacian(DD,D)") 
-                        + fvc::div(sigma(), "div(sigma)") 
-                        + rho()*g()     
-                        + stabilisation().stabilisation(D(), gradD(), impK_));
+                        rho() * fvm::d2dt2(D()) == fvm::laplacian(impKf_, D(), "laplacian(DD,D)") - fvc::laplacian(impKf_, D(), "laplacian(DD,D)") + fvc::div(sigma(), "div(sigma)") + rho() * g() + stabilisation().stabilisation(D(), gradD(), impK_));
 
                     // Under-relaxation the linear system
                     DEqn.relax();
@@ -344,7 +352,7 @@ namespace Foam
                     {
                         writeDisplacementIteration(iCorr, false);
                     }
-
+                    
                     if (writeIndivResidualFile_)
                     {
                         writeResidualFile(iCorr);
@@ -353,6 +361,11 @@ namespace Foam
                     if (writeCellDisplacement_)
                     {
                         writeCellDisplacementList(iCorr);
+                    }
+
+                    if (writeAllDisplacmentFields_)
+                    {
+                        writeDisplacementIteration(iCorr, false);
                     }
 
                 } while (
@@ -451,7 +464,7 @@ namespace Foam
                 }
 
                 auto inputFoam = vectorField(inputSize, vector::zero);
-                const int inputVectorSize = (inputSize)*3;
+                const int inputVectorSize = (inputSize)*2;
 
                 std::vector<double> scaledInput(
                     inputVectorSize, 0);
@@ -460,9 +473,9 @@ namespace Foam
                 {
                     inputFoam[iterI] = prevCellD_[iterI][cellI]; // prevCellD_ contains a value for iteration 0 (which is full of zeros)
 
-                    scaledInput[iterI * 3] = scale(inputFoam[iterI].x(), kerasScalingMeans_[iterI].x(), kerasScalingStds_[iterI].x());
-                    scaledInput[iterI * 3 + 1] = scale(inputFoam[iterI].y(), kerasScalingMeans_[iterI].y(), kerasScalingStds_[iterI].y());
-                    scaledInput[iterI * 3 + 2] = scale(inputFoam[iterI].z(), kerasScalingMeans_[iterI].z(), kerasScalingStds_[iterI].z());
+                    scaledInput[iterI * 2] = scale(inputFoam[iterI].x(), kerasScalingMeans_[iterI].x(), kerasScalingStds_[iterI].x());
+                    scaledInput[iterI * 2 + 1] = scale(inputFoam[iterI].y(), kerasScalingMeans_[iterI].y(), kerasScalingStds_[iterI].y());
+                    // scaledInput[iterI * 3 + 2] = scale(inputFoam[iterI].z(), kerasScalingMeans_[iterI].z(), kerasScalingStds_[iterI].z());
                 }
 
                 // Add coordinate:
@@ -484,14 +497,14 @@ namespace Foam
                 const std::vector<double> scaledResult =
                     {
                         prediction[0].get(fdeep::tensor_pos(0)),
-                        prediction[0].get(fdeep::tensor_pos(1)),
-                        prediction[0].get(fdeep::tensor_pos(2))};
+                        prediction[0].get(fdeep::tensor_pos(1))
+                    };
+
 
                 const std::vector<double> result =
                     {
                         invScale(scaledResult[0], kerasScalingMeans_[inputSize][0], kerasScalingStds_[inputSize][0]),
                         invScale(scaledResult[1], kerasScalingMeans_[inputSize][1], kerasScalingStds_[inputSize][1]),
-                        invScale(scaledResult[2], kerasScalingMeans_[inputSize][2], kerasScalingStds_[inputSize][2]),
                     };
 
                 
@@ -501,12 +514,6 @@ namespace Foam
                 [cellI].x() = result[0];
                 D()
                 [cellI].y() = result[1];
-
-                if (predictZ_)
-                {
-                    D()
-                    [cellI].z() = result[2];
-                }
 
             }
 
@@ -695,6 +702,35 @@ namespace Foam
             scalar res_z_final = max(res_z) / (max(denom_z) + SMALL);
 
             indivResidualFilePtr_() << res_x_final << tab << res_y_final << tab << res_z_final << endl;
+        
+            scalarField res_x_field = res_x / (max(denom_x) + SMALL);
+            scalarField res_y_field = res_y / (max(denom_y) + SMALL);
+            scalarField res_z_field = res_z / (max(denom_z) + SMALL);
+
+            volVectorField residual_D = D() * 1;
+
+            forAll(residual_D, cell)
+            {
+                residual_D[cell][0] = res_x_field[cell];
+                residual_D[cell][1] = res_y_field[cell];
+                residual_D[cell][2] = res_z_field[cell];
+            };
+
+            fileName fName;
+
+            fName = "residual_D_iteration" + Foam::name(iteration);
+
+            volVectorField residual_D_write(
+                IOobject(
+                    fName,
+                    runTime().timeName(),
+                    runTime(),
+                    IOobject::NO_READ,
+                    IOobject::AUTO_WRITE),
+                residual_D);
+                    
+            residual_D_write.write();
+
         }
 
         void linGeomTotalDispSolidML::writeCellDisplacementList(int iteration)
