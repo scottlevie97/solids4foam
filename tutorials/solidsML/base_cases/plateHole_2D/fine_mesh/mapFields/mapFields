@@ -1,0 +1,14 @@
+#!/bin/bash
+
+# Map fields
+
+rm -r 0
+cp -r ../base/0 .
+
+mapFields  -sourceTime latestTime  -consistent ../../coarse_mesh/base/
+
+cd 0
+
+shopt -s extglob 
+rm -- !(D)
+
