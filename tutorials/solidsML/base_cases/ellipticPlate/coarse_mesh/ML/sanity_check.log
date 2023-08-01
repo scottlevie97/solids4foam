@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "/home/scottlevie/foam/scottlevie-4.1/solids4foam/tutorials/solidsML/base_cases/ellipticPlate_new/coarse_mesh/ML/sanity_check.py", line 29, in <module>
+    import sigfig
+ModuleNotFoundError: No module named 'sigfig'

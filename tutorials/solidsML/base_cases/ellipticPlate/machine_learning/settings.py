@@ -1,5 +1,5 @@
 #  Filepath for training case
-filepath1 = "../coarse_mesh/ellipticPlate/"
+filepath1 = "../coarse_mesh/base/"
 
 trainIterations = 20
 Timestepsize = 1

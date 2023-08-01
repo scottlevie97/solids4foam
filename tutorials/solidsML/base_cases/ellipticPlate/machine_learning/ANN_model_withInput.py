@@ -216,7 +216,7 @@ if answer_trainOrLoadModel == ("t"):
     # fit model
     # try without verbose for speed
     history = model.fit(
-        scaledX, scaledY, epochs=answer_epochs, verbose=verbose_setting)
+        scaledX, scaledY, epochs=answer_epochs, verbose=verbose_setting)#, batch_size = 2000)
 
     # evaluate the model
     train_mse = model.evaluate(scaledX, scaledY, verbose=0)
