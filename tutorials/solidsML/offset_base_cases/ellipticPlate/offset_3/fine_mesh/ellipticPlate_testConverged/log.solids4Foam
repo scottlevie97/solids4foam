@@ -1,0 +1,61 @@
+/*---------------------------------------------------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | foam-extend: Open Source CFD                    |
+|  \\    /   O peration     | Version:     4.1                                |
+|   \\  /    A nd           | Web:         http://www.foam-extend.org         |
+|    \\/     M anipulation  | For copyright notice see file Copyright         |
+\*---------------------------------------------------------------------------*/
+Build  : 4.1-70b064d0f326
+Exec   : solids4Foam
+Date   : Jun 07 2023
+Time   : 18:25:22
+Host   : "cal"
+PID    : 10934
+CtrlDict : "/media/scott/Seagate Basic/solids4foam/tutorials/solidsML/offset_base_cases/ellipticPlate/offset_5/fine_mesh/ellipticPlate_testConverged/system/controlDict"
+Case   : /media/scott/Seagate Basic/solids4foam/tutorials/solidsML/offset_base_cases/ellipticPlate/offset_5/fine_mesh/ellipticPlate_testConverged
+nProcs : 1
+sigFpe : Enabling floating point exception trapping (FOAM_SIGFPE).
+allowSystemOperations : Disallowing user-supplied system call operations
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+Create time
+
+/*---------------------------------------------------------------------------*\
+|    For further information on the solids4Foam toolbox implementations,      |
+|    please see the following publications:                                   |
+|                                                                             |
+|    P. Cardiff, A Karac, P. De Jaeger, H. Jasak, J. Nagy, A. Ivankovic,      |
+|    Z. Tukovic: An open-source finite volume toolbox for solid mechanics and |
+|    fluid-solid interaction simulations. arXiv:1808.10736v2, 2018, available |
+|    at https://arxiv.org/abs/1808.10736.                                     |
+|                                                                             |
+|    Z. Tukovic, A. Karac, P. Cardiff, H. Jasak, A. Ivankovic: OpenFOAM       |
+|    finite volume solver for fluid-solid interaction.  Transactions of       |
+|    Famena, 42 (3), pp. 1-31, 2018, 10.21278/TOF.42301.                      |
+\*---------------------------------------------------------------------------*/
+
+Selecting physicsModel solidModel
+Selecting solidModel linearGeometryTotalDisplacementML
+Selecting dynamicFvMesh staticFvMesh
+Creating fixedDisplacement boundary condition
+Creating solidTraction boundary condition
+Creating solidTraction boundary condition
+Creating solidTraction boundary condition
+    under-relaxation method: fixed
+Creating residual.dat
+Creating iterationTime.dat
+Creating the mechanicalModel
+Selecting mechanical law linearElastic
+
+
+--> FOAM FATAL IO ERROR: 
+keyword predictionResiduals is undefined in dictionary "/media/scott/Seagate Basic/solids4foam/tutorials/solidsML/offset_base_cases/ellipticPlate/offset_5/fine_mesh/ellipticPlate_testConverged/constant/solidProperties::linearGeometryTotalDisplacementMLCoeffs|linearGeometryTotalDisplacementMLCoeffs|unsLinearGeometryCoeffs"
+
+file: /media/scott/Seagate Basic/solids4foam/tutorials/solidsML/offset_base_cases/ellipticPlate/offset_5/fine_mesh/ellipticPlate_testConverged/constant/solidProperties::linearGeometryTotalDisplacementMLCoeffs|linearGeometryTotalDisplacementMLCoeffs|unsLinearGeometryCoeffs from line 25 to line 0.
+
+    From function const Foam::entry& Foam::dictionary::lookupEntry(const Foam::word&, bool, bool) const
+    in file db/dictionary/dictionary.C at line 441.
+
+FOAM exiting
+
+ERROR

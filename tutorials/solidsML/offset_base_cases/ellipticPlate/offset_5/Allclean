@@ -1,0 +1,31 @@
+#!/bin/bash
+
+CASE_NAME=ellipticPlate
+
+cd coarse_mesh/$CASE_NAME 
+
+./Allclean
+
+cd ../"$CASE_NAME"_ML 
+
+./Allclean
+
+cd ../../fine_mesh/$CASE_NAME
+
+./Allclean
+
+cd ../"$CASE_NAME"_ML 
+
+./Allclean
+
+cd ../"$CASE_NAME"_mapFields
+
+./Allclean
+
+cd ../"$CASE_NAME"_testConverged
+
+./Allclean
+
+cd ../../machine_learning
+
+./Allclean

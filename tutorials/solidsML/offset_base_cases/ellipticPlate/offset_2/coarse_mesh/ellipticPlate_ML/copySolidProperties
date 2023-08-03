@@ -1,0 +1,3 @@
+#!/bin/bash
+
+cp ../../machine_learning/solidProperties constant/solidProperties

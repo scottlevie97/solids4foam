@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "/home/scottlevie/foam/scottlevie-4.1/solids4foam/tutorials/solidsML/multipleJumps/ellipticPlate/coarse_mesh/ellipticPlate_ML/sanity_check.py", line 23, in <module>
+    prediction_OF = xyz("1/D_predicted")
+  File "/home/scottlevie/foam/scottlevie-4.1/solids4foam/tutorials/solidsML/multipleJumps/ellipticPlate/coarse_mesh/ellipticPlate_ML/sanity_check.py", line 7, in xyz
+    my_file = open(filepath)
+FileNotFoundError: [Errno 2] No such file or directory: '1/D_predicted'

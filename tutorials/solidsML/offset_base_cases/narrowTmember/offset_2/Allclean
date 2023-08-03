@@ -1,0 +1,29 @@
+#!/bin/bash
+
+cd coarse_mesh/base
+
+./Allclean
+
+cd ../ML 
+
+./Allclean
+
+cd ../../fine_mesh/base
+
+./Allclean
+
+cd ../ML 
+
+./Allclean
+
+cd ../mapFields
+
+./Allclean
+
+cd ../testConverged
+
+./Allclean
+
+cd ../../machine_learning
+
+# ./Allclean

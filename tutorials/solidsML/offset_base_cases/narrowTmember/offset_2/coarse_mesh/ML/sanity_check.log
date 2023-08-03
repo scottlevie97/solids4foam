@@ -1,0 +1,12 @@
+/media/scott/Seagate Basic/solids4foam/tutorials/solidsML/offset_base_cases/narrowTmember/offset_2/coarse_mesh/ML/sanity_check.py:18: VisibleDeprecationWarning: Creating an ndarray from ragged nested sequences (which is a list-or-tuple of lists-or-tuples-or ndarrays with different lengths or shapes) is deprecated. If you meant to do this, you must specify 'dtype=object' when creating the ndarray.
+  arr=np.array(string_list)
+TypeError: float() argument must be a string or a number, not 'list'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/media/scott/Seagate Basic/solids4foam/tutorials/solidsML/offset_base_cases/narrowTmember/offset_2/coarse_mesh/ML/sanity_check.py", line 23, in <module>
+    prediction_OF = xyz("1/D_predicted")
+  File "/media/scott/Seagate Basic/solids4foam/tutorials/solidsML/offset_base_cases/narrowTmember/offset_2/coarse_mesh/ML/sanity_check.py", line 19, in xyz
+    arr= arr.astype(np.float64)
+ValueError: setting an array element with a sequence.
