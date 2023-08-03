@@ -1,7 +1,0 @@
-#!/bin/bash
-
-# source /home/philipc/miniconda3/etc/profile.d/conda.sh
-
-# conda activate python3
-
-tensorboard --logdir=logs

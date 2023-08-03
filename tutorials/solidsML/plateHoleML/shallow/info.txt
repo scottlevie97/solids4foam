@@ -1,5 +1,0 @@
-It seems that even with one epoch the results work!
-
-I checked to see if this was caused by the traction loop but it's not - 
-
-I removed the prediction and kept the traction loop and there was no drop in residuals

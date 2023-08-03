@@ -1,5 +1,0 @@
-#!/bin/bash
-
-# conda activate base
-
-ipython -c "%run HP_tuning.ipynb" >& hptuning.log  
