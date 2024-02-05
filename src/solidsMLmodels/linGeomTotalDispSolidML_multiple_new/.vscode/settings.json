@@ -1,0 +1,13 @@
+{
+    "files.associations": {
+        "linGeomTotalDispSolidML.C": "cpp",
+        "random": "c",
+        "functional": "cpp",
+        "ostream": "cpp",
+        "chrono": "cpp",
+        "limits": "cpp",
+        "valarray": "cpp",
+        "cmath": "cpp",
+        "complex": "cpp"
+    }
+}
