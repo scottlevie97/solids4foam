@@ -1,10 +1,4 @@
 /*---------------------------------------------------------------------------*\
-  =========                 |
-  \\      /  F ield         | foam-extend: Open Source CFD
-   \\    /   O peration     |
-    \\  /    A nd           | For copyright notice see file Copyright
-     \\/     M anipulation  |
--------------------------------------------------------------------------------
 License
     This file is part of solids4foam.
 
@@ -166,22 +160,90 @@ void Foam::mechanicalLaw::makeSigma0() const
             << "pointer already set" << abort(FatalError);
     }
 
-    sigma0Ptr_.set
+    // Check if a single
+    if (mesh() == baseMesh())
+    {
+        sigma0Ptr_.set
+        (
+            new volSymmTensorField
+            (
+                IOobject
+                (
+                    "sigma0",
+                    mesh().time().timeName(),
+                    mesh(),
+                    IOobject::READ_IF_PRESENT,
+                    IOobject::NO_WRITE
+                ),
+                mesh(),
+                dimensionedSymmTensor("0", dimPressure, symmTensor::zero)
+            )
+        );
+    }
+    else if
     (
-        new volSymmTensorField
+        baseMesh().lookupObject<mechanicalModel>
+        (
+            "mechanicalProperties"
+        ).PtrList::size() == 1
+     || !baseMesh().foundObject<volSymmTensorField>("sigma0")
+    )
+    {
+        // Only one material, but the material mesh is not the same as the
+        // base mesh: it must be a dualMesh or similar
+        // For now, give a warning
+        Warning
+            << "Creating sigma0 but baseMesh is not equal to the material mesh!"
+            << "\nsigma0 may not be correct" << endl;
+        sigma0Ptr_.set
+        (
+            new volSymmTensorField
+            (
+                IOobject
+                (
+                    "sigma0",
+                    mesh().time().timeName(),
+                    mesh(),
+                    IOobject::READ_IF_PRESENT,
+                    IOobject::NO_WRITE
+                ),
+                mesh(),
+                dimensionedSymmTensor("0", dimPressure, symmTensor::zero)
+            )
+        );
+    }
+    else
+    {
+        // Read sigma0 from the baseMesh
+        const volSymmTensorField sigma0BaseMesh
         (
             IOobject
             (
                 "sigma0",
-                mesh().time().timeName(),
-                mesh(),
+                baseMesh().time().timeName(),
+                baseMesh(),
                 IOobject::READ_IF_PRESENT,
                 IOobject::NO_WRITE
             ),
-            mesh(),
+            baseMesh(),
             dimensionedSymmTensor("0", dimPressure, symmTensor::zero)
-        )
-    );
+        );
+
+        // Map sigma0 from the baseMesh to this mesh
+        sigma0Ptr_.set
+        (
+            new volSymmTensorField
+            (
+                baseMesh().lookupObject<mechanicalModel>
+                (
+                    "mechanicalProperties"
+                ).solSubMeshes().lookupBaseMeshVolField<symmTensor>
+                (
+                    "sigma0", mesh()
+                )()
+            )
+        );
+    }
 }
 
 
@@ -411,33 +473,6 @@ void Foam::mechanicalLaw::makeSigmaHyd()
 }
 
 
-void Foam::mechanicalLaw::makeSigmaEff()
-{
-    if (sigmaEffPtr_.valid())
-    {
-        FatalErrorIn("void " + type() + "::makeSigmaEff()")
-            << "pointer already set" << abort(FatalError);
-    }
-
-    sigmaEffPtr_.set
-    (
-        new volSymmTensorField
-        (
-            IOobject
-            (
-                "sigmaEff_",
-                mesh().time().timeName(),
-                mesh(),
-                IOobject::READ_IF_PRESENT,
-                IOobject::AUTO_WRITE
-            ),
-            mesh(),
-            dimensionedSymmTensor("zero", dimPressure, symmTensor::zero)
-        )
-    );
-}
-
-
 // * * * * * * * * * * * * * * Protected Members * * * * * * * * * * * * * * //
 
 bool Foam::mechanicalLaw::planeStress() const
@@ -488,7 +523,14 @@ const Foam::volScalarField& Foam::mechanicalLaw::mu() const
 {
     if (muPtr_.empty())
     {
-        makeMu();
+        // Resolves temporarily #90
+        //makeMu();
+        FatalErrorIn
+        (
+            "const Foam::volScalarField& Foam::mechanicalLaw::mu() const"
+        )   << "mu field has not been set. Please construct the field first"
+            << " using mu(const dimensionedScalar& mu)"
+            << abort(FatalError);
     }
 
     return muPtr_();
@@ -499,7 +541,12 @@ Foam::volScalarField& Foam::mechanicalLaw::mu()
 {
     if (muPtr_.empty())
     {
-        makeMu();
+        // Resolves temporarily #90
+        //makeMu();
+        FatalErrorIn("Foam::volScalarField& Foam::mechanicalLaw::mu()")
+            << "mu field has not been set. Please construct the field first"
+            << " using mu(const dimensionedScalar& mu)"
+            << abort(FatalError);
     }
 
     return muPtr_();
@@ -510,7 +557,14 @@ const Foam::surfaceScalarField& Foam::mechanicalLaw::muf() const
 {
     if (mufPtr_.empty())
     {
-        makeMuf();
+        // Resolves temporarily #90
+        //makeMuf();
+        FatalErrorIn
+        (
+            "const Foam::surfaceScalarField& Foam::mechanicalLaw::muf() const"
+        )   << "muf field has not been set. Please construct the field first"
+            << " using muf(const dimensionedScalar& mu)"
+            << abort(FatalError);
     }
 
     return mufPtr_();
@@ -521,7 +575,12 @@ Foam::surfaceScalarField& Foam::mechanicalLaw::muf()
 {
     if (mufPtr_.empty())
     {
-        makeMuf();
+        // Resolves temporarily #90
+        //makeMuf();
+        FatalErrorIn("Foam::surfaceScalarField& Foam::mechanicalLaw::muf()")
+            << "muf field has not been set. Please construct the field first"
+            << " using muf(const dimensionedScalar& mu)"
+            << abort(FatalError);
     }
 
     return mufPtr_();
@@ -536,6 +595,21 @@ const Foam::volScalarField& Foam::mechanicalLaw::mu(const dimensionedScalar& mu)
     }
 
     // Set constant field, overwriting any existing values
+    muPtr_() = mu;
+
+    // Return a reference to the field
+    return muPtr_();
+}
+
+
+const Foam::volScalarField& Foam::mechanicalLaw::mu(const volScalarField& mu)
+{
+    if (muPtr_.empty())
+    {
+        makeMu();
+    }
+
+    // Set variable field, overwriting any existing values
     muPtr_() = mu;
 
     // Return a reference to the field
@@ -561,11 +635,34 @@ const Foam::surfaceScalarField& Foam::mechanicalLaw::muf
 }
 
 
+const Foam::surfaceScalarField& Foam::mechanicalLaw::muf
+(
+    const surfaceScalarField& mu
+)
+{
+    if (mufPtr_.empty())
+    {
+        makeMuf();
+    }
+
+    // Set variable field, overwriting any existing values
+    mufPtr_() = mu;
+
+    // Return a reference to the field
+    return mufPtr_();
+}
+
+
 const Foam::volScalarField& Foam::mechanicalLaw::K() const
 {
     if (KPtr_.empty())
     {
-        makeK();
+        // Resolves temporarily #90
+        //makeK();
+        FatalErrorIn("const Foam::volScalarField& Foam::mechanicalLaw::K()")
+            << "K field has not been set. Please construct the field first"
+            << " using K(const dimensionedScalar& K)"
+            << abort(FatalError);
     }
 
     return KPtr_();
@@ -576,7 +673,12 @@ Foam::volScalarField& Foam::mechanicalLaw::K()
 {
     if (KPtr_.empty())
     {
-        makeK();
+        // Resolves temporarily #90
+        //makeK();
+        FatalErrorIn("Foam::volScalarField& Foam::mechanicalLaw::K()")
+            << "K field has not been set. Please construct the field first"
+            << " using K(const dimensionedScalar& K)"
+            << abort(FatalError);
     }
 
     return KPtr_();
@@ -587,7 +689,14 @@ const Foam::surfaceScalarField& Foam::mechanicalLaw::Kf() const
 {
     if (KfPtr_.empty())
     {
-        makeKf();
+        // Resolves temporarily #90
+        //makeKf();
+        FatalErrorIn
+        (
+            "const Foam::surfaceScalarField& Foam::mechanicalLaw::Kf() const"
+        )   << "Kf field has not been set. Please construct the field first"
+            << " using Kf(const dimensionedScalar& K)"
+            << abort(FatalError);
     }
 
     return KfPtr_();
@@ -598,7 +707,12 @@ Foam::surfaceScalarField& Foam::mechanicalLaw::Kf()
 {
     if (KfPtr_.empty())
     {
-        makeKf();
+        // Resolves temporarily #90
+        //makeKf();
+        FatalErrorIn("Foam::surfaceScalarField& Foam::mechanicalLaw::Kf()")
+            << "Kf field has not been set. Please construct the field first"
+            << " using Kf(const dimensionedScalar& K)"
+            << abort(FatalError);
     }
 
     return KfPtr_();
@@ -620,6 +734,21 @@ const Foam::volScalarField& Foam::mechanicalLaw::K(const dimensionedScalar& K)
 }
 
 
+const Foam::volScalarField& Foam::mechanicalLaw::K(const volScalarField& K)
+{
+    if (KPtr_.empty())
+    {
+        makeK();
+    }
+
+    // Set variable field, overwriting any existing values
+    KPtr_() = K;
+
+    // Return a reference to the field
+    return KPtr_();
+}
+
+
 const Foam::surfaceScalarField& Foam::mechanicalLaw::Kf
 (
     const dimensionedScalar& K
@@ -631,6 +760,24 @@ const Foam::surfaceScalarField& Foam::mechanicalLaw::Kf
     }
 
     // Set constant field, overwriting any existing values
+    KfPtr_() = K;
+
+    // Return a reference to the field
+    return KfPtr_();
+}
+
+
+const Foam::surfaceScalarField& Foam::mechanicalLaw::Kf
+(
+    const surfaceScalarField& K
+)
+{
+    if (KfPtr_.empty())
+    {
+        makeKf();
+    }
+
+    // Set variable field, overwriting any existing values
     KfPtr_() = K;
 
     // Return a reference to the field
@@ -823,17 +970,6 @@ Foam::volVectorField& Foam::mechanicalLaw::gradSigmaHyd()
     }
 
     return gradSigmaHydPtr_();
-}
-
-
-Foam::volSymmTensorField& Foam::mechanicalLaw::sigmaEff()
-{
-    if (sigmaEffPtr_.empty())
-    {
-        makeSigmaEff();
-    }
-
-    return sigmaEffPtr_();
 }
 
 
@@ -1196,7 +1332,7 @@ void Foam::mechanicalLaw::updateSigmaHyd
 {
     if (solvePressureEqn_)
     {
-#ifdef OPENFOAMESIORFOUNDATION
+#ifdef OPENFOAM_NOT_EXTEND
         SolverPerformance<scalar>::debug = 0;
 #endif
 
@@ -1214,7 +1350,7 @@ void Foam::mechanicalLaw::updateSigmaHyd
             }
             else
             {
-#ifdef OPENFOAMESIORFOUNDATION
+#ifdef OPENFOAM_NOT_EXTEND
                 FatalErrorIn("void Foam::mechanicalLaw::updateSigmaHyd(...)")
                     << "Multi-materials are not yet ported for this version of "
                     << "OpenFOAM" << abort(FatalError);
@@ -1347,15 +1483,14 @@ Foam::mechanicalLaw::mechanicalLaw
     relFfPtr_(),
     solvePressureEqn_
     (
-        dict.lookupOrDefault<Switch>("solvePressureEqn", false)
+        dict_.lookupOrAddDefault<Switch>("solvePressureEqn", false)
     ),
     pressureSmoothingScaleFactor_
     (
-        dict.lookupOrDefault<scalar>("pressureSmoothingScaleFactor", 100.0)
+        dict_.lookupOrAddDefault<scalar>("pressureSmoothingScaleFactor", 100.0)
     ),
     sigmaHydPtr_(),
     gradSigmaHydPtr_(),
-    sigmaEffPtr_(),
     curTimeIndex_(-1),
     warnAboutEnforceLinear_(true)
 {
@@ -1378,7 +1513,7 @@ Foam::mechanicalLaw::mechanicalLaw
             "(\n"
             "    const word& name,\n"
             "    const fvMesh& mesh,\n"
-            "    const dictionary& dict\n"
+            "    dictionary& dict\n"
             ")"
         ) << "solid region name not found" << abort(FatalError);
     }
@@ -1422,7 +1557,7 @@ Foam::tmp<Foam::volScalarField> Foam::mechanicalLaw::rho() const
         )
     );
 
-#ifdef OPENFOAMESIORFOUNDATION
+#ifdef OPENFOAM_NOT_EXTEND
     tresult.ref().correctBoundaryConditions();
 #else
     tresult().correctBoundaryConditions();
@@ -1438,18 +1573,20 @@ Foam::tmp<Foam::surfaceScalarField> Foam::mechanicalLaw::impKf() const
 }
 
 
-Foam::tmp<Foam::Field<Foam::symmTensor4thOrder>>
+#ifdef OPENFOAM_NOT_EXTEND
+Foam::tmp<Foam::Field<Foam::scalarSquareMatrix>>
 Foam::mechanicalLaw::materialTangentField() const
 {
     // Default to uniform field
     // This function can be overwritten in specific mechanical laws
-    tmp<Field<symmTensor4thOrder>> tresult
+    tmp<Field<scalarSquareMatrix>> tresult
     (
-        new Field<symmTensor4thOrder>(mesh().nFaces(), materialTangent())
+        new Field<scalarSquareMatrix>(mesh().nFaces(), materialTangent())
     );
 
     return tresult;
 }
+#endif
 
 
 void Foam::mechanicalLaw::correct(surfaceSymmTensorField&)

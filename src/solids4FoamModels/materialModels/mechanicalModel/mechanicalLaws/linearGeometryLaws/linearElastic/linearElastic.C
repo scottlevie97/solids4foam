@@ -1,10 +1,4 @@
 /*---------------------------------------------------------------------------*\
-  =========                 |
-  \\      /  F ield         | foam-extend: Open Source CFD
-   \\    /   O peration     |
-    \\  /    A nd           | For copyright notice see file Copyright
-     \\/     M anipulation  |
--------------------------------------------------------------------------------
 License
     This file is part of solids4foam.
 
@@ -143,7 +137,7 @@ Foam::linearElastic::linearElastic
             "(\n"
             "    const word& name,\n"
             "    const fvMesh& mesh,\n"
-            "    const dictionary& dict\n"
+            "    dictionary& dict\n"
             ")"
         )   << "Unphysical Poisson's ratio: nu should be >= -1.0 and <= 0.5"
             << abort(FatalError);
@@ -193,7 +187,7 @@ Foam::tmp<Foam::volScalarField> Foam::linearElastic::bulkModulus() const
         )
     );
 
-#ifdef OPENFOAMESIORFOUNDATION
+#ifdef OPENFOAM_NOT_EXTEND
     tresult.ref().correctBoundaryConditions();
 #else
     tresult().correctBoundaryConditions();
@@ -247,18 +241,31 @@ Foam::tmp<Foam::volScalarField> Foam::linearElastic::impK() const
 }
 
 
-Foam::symmTensor4thOrder Foam::linearElastic::materialTangent() const
+#ifdef OPENFOAM_NOT_EXTEND
+Foam::scalarSquareMatrix
+Foam::linearElastic::materialTangent() const
 {
-    return symmTensor4thOrder
-    (
-        2*mu_.value() + lambda().value(), lambda().value(), lambda().value(),
-                2*mu_.value() + lambda().value(), lambda().value(),
-                        2*mu_.value() + lambda().value(),
-        mu_.value(), // xyxy == yxyx == xyyx == yxxy
-        mu_.value(), // yzyz == zyzy == yzzy == zyyz
-        mu_.value()  // zxzx == xzxz == xzzx == zxxz
-    );
+    scalarSquareMatrix matTang(6, 0.0);
+
+    matTang(0,0) = 2*mu_.value() + lambda().value();
+    matTang(0,1) = lambda().value();
+    matTang(0,2) = lambda().value();
+
+    matTang(1,0) = lambda().value();
+    matTang(1,1) = 2*mu_.value() + lambda().value();
+    matTang(1,2) = lambda().value();
+
+    matTang(2,0) = lambda().value();
+    matTang(2,1) = lambda().value();
+    matTang(2,2) = 2*mu_.value() + lambda().value();
+
+    matTang(3,3) = mu_.value();
+    matTang(4,4) = mu_.value();
+    matTang(5,5) = mu_.value();
+
+    return matTang;
 }
+#endif
 
 
 const Foam::dimensionedScalar& Foam::linearElastic::mu() const

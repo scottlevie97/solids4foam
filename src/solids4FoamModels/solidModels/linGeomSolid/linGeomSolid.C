@@ -107,7 +107,7 @@ bool linGeomSolid::evolve()
     do
     {
         int iCorr = 0;
-#ifdef OPENFOAMESIORFOUNDATION
+#ifdef OPENFOAM_NOT_EXTEND
         SolverPerformance<vector> solverPerfDD;
         SolverPerformance<vector>::debug = 0;
 #else
@@ -141,11 +141,6 @@ bool linGeomSolid::evolve()
             // Enforce any cell displacements
             solidModel::setCellDisps(DDEqn);
 
-            // Hack to avoid expensive copy of residuals
-#ifdef OPENFOAMESI
-            const_cast<dictionary&>(mesh().solverPerformanceDict()).clear();
-#endif
-
             // Solve the linear system
             solverPerfDD = DDEqn.solve();
 
@@ -162,7 +157,7 @@ bool linGeomSolid::evolve()
             gradD() = gradD().oldTime() + gradDD();
 
             // Calculate the stress using run-time selectable mechanical law
-            const volScalarField DDEqnA("DDEqnA", DDEqn.A());
+            const volScalarField DDEqnA("DEqnA", DDEqn.A());
             mechanical().correct(sigma());
         }
         while
@@ -170,7 +165,7 @@ bool linGeomSolid::evolve()
             !converged
             (
                 iCorr,
-#ifdef OPENFOAMESIORFOUNDATION
+#ifdef OPENFOAM_NOT_EXTEND
                 mag(solverPerfDD.initialResidual()),
                 cmptMax(solverPerfDD.nIterations()),
 #else
@@ -195,7 +190,7 @@ bool linGeomSolid::evolve()
     // Store d2dt2
     rhoD2dt2D() = rho()*fvc::d2dt2(D());
 
-#ifdef OPENFOAMESIORFOUNDATION
+#ifdef OPENFOAM_NOT_EXTEND
     SolverPerformance<vector>::debug = 1;
 #else
     blockLduMatrix::debug = 1;

@@ -117,7 +117,7 @@ public:
         fixedDisplacementFvPatchVectorField
         (
             const fixedDisplacementFvPatchVectorField&
-#ifdef OPENFOAMFOUNDATION
+#ifdef OPENFOAM_ORG
         ) = delete;
 #else
         );
@@ -154,7 +154,7 @@ public:
 
     // Destructors
 
-        //- Construct from patch and internal field
+        //- Destructor
         virtual ~fixedDisplacementFvPatchVectorField();
 
 

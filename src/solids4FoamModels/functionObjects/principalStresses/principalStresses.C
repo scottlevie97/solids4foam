@@ -125,10 +125,10 @@ bool Foam::principalStresses::read(const dictionary& dict)
     return true;
 }
 
-#ifdef OPENFOAMESIORFOUNDATION
+#ifdef OPENFOAM_NOT_EXTEND
 bool Foam::principalStresses::write()
 {
-    return true;
+    return false;
 }
 #endif
 

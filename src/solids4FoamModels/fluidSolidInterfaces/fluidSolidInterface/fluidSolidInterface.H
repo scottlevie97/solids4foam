@@ -62,7 +62,7 @@ class fluidSolidInterface
     // Private data
 
         //- FSI properties dictionary
-        mutable dictionary fsiProperties_;
+        dictionary& fsiProperties_;
 
         //- Flow solver
         autoPtr<fluidModel> fluid_;
@@ -180,6 +180,14 @@ class fluidSolidInterface
         //- Disallow default bitwise assignment
         void operator=(const fluidSolidInterface&);
 
+protected:
+    // Protected Member Functions
+
+        //- Return sub-dictionary
+        dictionary& fsiProperties()
+        {
+            return fsiProperties_;
+        }
 
 public:
 
@@ -487,6 +495,9 @@ public:
             //- Update interface force
             virtual void updateForce();
 
+            //- Update separately interface viscous force and pressure
+            virtual void updateViscousForceAndPressure();
+
             //- Update interface force
             virtual scalar updateResidual();
 
@@ -506,6 +517,9 @@ public:
 
             //- Write fields
             virtual void writeFields(const Time& runTime);
+
+            //- This function is called at the end of the simulation
+            virtual void end();
 };
 
 

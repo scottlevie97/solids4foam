@@ -1,10 +1,4 @@
 /*---------------------------------------------------------------------------*\
-  =========                 |
-  \\      /  F ield         | foam-extend: Open Source CFD
-   \\    /   O peration     | Version:     3.2
-    \\  /    A nd           | Web:         http://www.foam-extend.org
-     \\/     M anipulation  | For copyright notice see file Copyright
--------------------------------------------------------------------------------
 License
     This file is part of solids4foam.
 
@@ -76,7 +70,7 @@ Foam::tmp<Foam::volVectorField> Foam::momentumStabilisation::stabilisation
             )
         )
     );
-#ifdef OPENFOAMESIORFOUNDATION
+#ifdef OPENFOAM_NOT_EXTEND
     volVectorField& result = tresult.ref();
 #else
     volVectorField& result = tresult();
@@ -134,7 +128,7 @@ Foam::tmp<Foam::volVectorField> Foam::momentumStabilisation::stabilisation
     const labelList& nei = mesh.neighbour();
     const scalarField& gammaI = gamma;
 
-#ifdef OPENFOAMESIORFOUNDATION
+#ifdef OPENFOAM_NOT_EXTEND
     scalarField& gammafI = gammaf.ref();
 #else
     scalarField& gammafI = gammaf.internalField();
@@ -169,7 +163,7 @@ Foam::tmp<Foam::volVectorField> Foam::momentumStabilisation::stabilisation
                 gamma.boundaryField()[patchI].patchNeighbourField()
             );
 
-#ifdef OPENFOAMESIORFOUNDATION
+#ifdef OPENFOAM_NOT_EXTEND
             scalarField& gammafP = gammaf.boundaryFieldRef()[patchI];
 #else
             scalarField& gammafP = gammaf.boundaryField()[patchI];
@@ -204,7 +198,7 @@ Foam::tmp<Foam::volVectorField> Foam::momentumStabilisation::stabilisation
         else
         {
             // Set stabilisation to zero on non-coupled boundaries
-#ifdef OPENFOAMESIORFOUNDATION
+#ifdef OPENFOAM_NOT_EXTEND
             gammaf.boundaryFieldRef()[patchI] = 0.0;
 #else
             gammaf.boundaryField()[patchI] = 0.0;

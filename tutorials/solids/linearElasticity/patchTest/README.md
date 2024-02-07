@@ -1,8 +1,10 @@
 ---
-sort: 2
+sort: 1
 ---
 
-# `patchTest`
+# Patch Test: `patchTest`
+
+Prepared by Philip Cardiff
 
 ---
 

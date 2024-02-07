@@ -78,7 +78,7 @@ class solidModel
         mutable autoPtr<dualMeshToMeshMap> dualMeshToMeshMapPtr_;
 
         //- Solid properties dictionary
-        IOdictionary solidProperties_;
+        mutable IOdictionary solidProperties_;
 
         //- Derived solidModel type
         const word type_;
@@ -135,6 +135,9 @@ class solidModel
 
         //- Gravitational acceleration
         const uniformDimensionedVectorField g_;
+
+        //- Damping coefficient
+        const dimensionedScalar dampingCoeff_;
 
         //- Stabilisation term for momentum equation
         autoPtr<momentumStabilisation> stabilisationPtr_;
@@ -586,6 +589,12 @@ public:
                 return g_;
             }
 
+            //- Return const access to the damping coefficient
+            const dimensionedScalar& dampingCoeff() const
+            {
+                return dampingCoeff_;
+            }
+
             //- Each solidModel must indicate whether D or DD is the primary
             //  solution variable
             virtual volVectorField& solutionD() = 0;
@@ -607,6 +616,36 @@ public:
             (
                 const label interfaceI
             ) const;
+
+            //- Face zone temperature
+            virtual tmp<scalarField> faceZoneTemperature
+            (
+                const label interfaceI
+            ) const
+            {
+                NotImplemented;
+                return tmp<scalarField>(new scalarField());
+            }
+
+            //- Face zone heat flux
+            virtual tmp<scalarField> faceZoneHeatFlux
+            (
+                const label interfaceI
+            ) const
+            {
+                NotImplemented;
+                return tmp<scalarField>(new scalarField());
+            }
+
+            //- Face zone heat transfer coeff (delta/lambda)
+            virtual tmp<scalarField> faceZoneHeatTransferCoeff
+            (
+                const label interfaceI
+            ) const
+            {
+                NotImplemented;
+                return tmp<scalarField>(new scalarField());
+            }
 
             //- Return enforceLinear switch
             const Switch& enforceLinear() const
@@ -678,6 +717,47 @@ public:
                 const label patchID,
                 const vectorField& faceZoneTraction
             );
+
+            //- Set pressure at specified patch
+            virtual void setPressure
+            (
+                fvPatchVectorField& tractionPatch,
+                const scalarField& pressure
+            );
+
+            //- Set pressure at specified patch
+            virtual void setPressure
+            (
+                const label interfaceI,
+                const label patchID,
+                const scalarField& faceZonePressure
+            );
+
+            //- Set temperature and heat flux at specified patch
+            virtual void setTemperatureAndHeatFlux
+            (
+                const label interfaceI,
+                const label patchID,
+                const scalarField& faceZoneTemperature,
+                const scalarField& faceZoneHeatFlux
+            )
+            {
+                NotImplemented;
+            }
+
+            //- Set equivalent interface heat transfer coefficient
+            virtual void setEqInterHeatTransferCoeff
+            (
+                const label interfaceI,
+                const label patchID,
+                const scalarField& faceZoneHTC
+            )
+            {
+                NotImplemented;
+            }
+
+            //- Let the material model recalculate the density
+            virtual void recalculateRho();
 
             //- Check if solid model is diverging using the Jacobian field
             virtual Switch& checkEnforceLinear(const volScalarField& J);

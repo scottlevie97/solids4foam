@@ -1,10 +1,4 @@
 /*---------------------------------------------------------------------------*\
-  =========                 |
-  \\      /  F ield         | foam-extend: Open Source CFD
-   \\    /   O peration     |
-    \\  /    A nd           | For copyright notice see file Copyright
-     \\/     M anipulation  |
--------------------------------------------------------------------------------
 License
     This file is part of solids4foam.
 
@@ -248,7 +242,7 @@ void Foam::linearElasticMohrCoulombPlastic::calculateEigens
                 const scalar aBy3 = a/3;
 
                 i = m2SqrtQ*Foam::cos(theta/3) - aBy3;
-#ifdef OPENFOAMESIORFOUNDATION
+#ifdef OPENFOAM_NOT_EXTEND
                 ii =
                     m2SqrtQ*Foam::cos((theta + constant::mathematical::twoPi)/3.0)
                   - aBy3;
@@ -413,7 +407,6 @@ void Foam::linearElasticMohrCoulombPlastic::calculateEigens
     }
 }
 
-
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
 // Construct from dictionary
@@ -441,7 +434,7 @@ Foam::linearElasticMohrCoulombPlastic::linearElasticMohrCoulombPlastic
     varPsi_(dict.lookup("dilationAngle")),
     k_
     (
-#ifdef OPENFOAMESIORFOUNDATION
+#ifdef OPENFOAM_NOT_EXTEND
         (
             (1 + sin(varPhi_/180.0*constant::mathematical::pi))
            /(1 - sin(varPhi_/180.0*constant::mathematical::pi))
@@ -455,7 +448,7 @@ Foam::linearElasticMohrCoulombPlastic::linearElasticMohrCoulombPlastic
     ),
     m_
     (
-#ifdef OPENFOAMESIORFOUNDATION
+#ifdef OPENFOAM_NOT_EXTEND
         (
             (1 + sin(varPsi_/180.0*constant::mathematical::pi))
            /(1 - sin(varPsi_/180.0*constant::mathematical::pi))
@@ -485,11 +478,24 @@ Foam::linearElasticMohrCoulombPlastic::linearElasticMohrCoulombPlastic
     r_lg1_(1, 1, m_),
     r_lg2_(1, m_, m_),
     sigma_a_((2.0*c_*Foam::sqrt(k_)/(k_ - 1.0)).value()*vector::one),
-    sigmaEfff_
+    deltaSigma_
     (
         IOobject
         (
-            "sigmaEfff",
+            "deltaSigma_",
+            mesh.time().timeName(),
+            mesh,
+            IOobject::NO_READ,
+            IOobject::NO_WRITE
+        ),
+        mesh,
+        dimensionedSymmTensor("zero", dimPressure, symmTensor::zero)
+    ),
+    deltaSigmaf_
+    (
+        IOobject
+        (
+            "deltaSigmaf",
             mesh.time().timeName(),
             mesh,
             IOobject::NO_READ,
@@ -596,6 +602,15 @@ Foam::linearElasticMohrCoulombPlastic::linearElasticMohrCoulombPlastic
 
     // Create the initial stress field
     sigma0();
+
+    // Check and warn for zero inital stress
+    if (sum(mag(sigma0())).value() < SMALL)
+    {
+        WarningIn("linearElasticMohrCoulombPlastic")
+            << "Initial stress is zero everywhere, "
+            << "since Mohr-Coulomb material law is stress-state dependent, "
+            << "this may lead to problems. Proceed with caution." << endl;
+    }
 }
 
 
@@ -657,7 +672,7 @@ void Foam::linearElasticMohrCoulombPlastic::correct(volSymmTensorField& sigma)
     );
 
     // Set sigma to sigma effective trial, including the initial stress
-    sigma = sigmaEff().oldTime() + DSigmaTrial + sigma0();
+    sigma = deltaSigma_.oldTime() + DSigmaTrial + sigma0();
 
     // Take a reference to internal fields for efficiency
     symmTensorField& sigmaI = sigma;
@@ -673,7 +688,7 @@ void Foam::linearElasticMohrCoulombPlastic::correct(volSymmTensorField& sigma)
     forAll(sigma.boundaryField(), patchI)
     {
         // Take references to the boundary patches for efficiency
-#ifdef OPENFOAMESIORFOUNDATION
+#ifdef OPENFOAM_NOT_EXTEND
         symmTensorField& sigmaP = sigma.boundaryFieldRef()[patchI];
         scalarField& activeYieldP = activeYield_.boundaryFieldRef()[patchI];
 #else
@@ -687,14 +702,14 @@ void Foam::linearElasticMohrCoulombPlastic::correct(volSymmTensorField& sigma)
         }
     }
 
-    // Store previous iteration of sigmaEff as it is used to calculate the
+    // Store previous iteration of deltaSigma as it is used to calculate the
     // residual
-    sigmaEff().storePrevIter();
+    deltaSigma_.storePrevIter();
 
-    // Update the effective stress tensor
+    // Update the stress variation tensor
+    deltaSigma_ = sigma - sigma0();
     // Note: if a poro-elasto-plastic law is used then the pore-pressure term
-    // will be added after this
-    sigmaEff() = 1.0*sigma;
+    // will be added to the effective stress after this
 }
 
 
@@ -716,13 +731,13 @@ void Foam::linearElasticMohrCoulombPlastic::correct
     );
 
     // Set sigma to sigma effective trial, including the initial stress
-    sigma = sigmaEfff_.oldTime() + DSigmaTrial + sigma0f();
+    sigma = deltaSigmaf_.oldTime() + DSigmaTrial + sigma0f();
 
     // Take a reference to internal fields for efficiency
     symmTensorField& sigmaI = sigma;
     scalarField& activeYieldI = activeYield_;
 
-#ifdef OPENFOAMESI
+#ifdef OPENFOAM_COM
     const labelList& faceOwner = mesh().faceOwner();
     const labelList& faceNeighbour = mesh().faceNeighbour();
 #else
@@ -748,7 +763,7 @@ void Foam::linearElasticMohrCoulombPlastic::correct
     forAll(sigma.boundaryField(), patchI)
     {
         // Take references to the boundary patches for efficiency
-#ifdef OPENFOAMESIORFOUNDATION
+#ifdef OPENFOAM_NOT_EXTEND
         symmTensorField& sigmaP = sigma.boundaryFieldRef()[patchI];
         scalarField& activeYieldP = activeYield_.boundaryFieldRef()[patchI];
 #else
@@ -762,14 +777,14 @@ void Foam::linearElasticMohrCoulombPlastic::correct
         }
     }
 
-    // Store previous iteration of sigmaEff as it is used to calculate the
+    // Store previous iteration of deltaSigma as it is used to calculate the
     // residual
-    sigmaEfff_.storePrevIter();
+    deltaSigmaf_.storePrevIter();
 
-    // Update the effective stress tensor
+    // Update the stress variation tensor
+    deltaSigmaf_ = sigma - sigma0f();
     // Note: if a poro-elasto-plastic law is used then the pore-pressure term
     // will be added after this
-    sigmaEfff_ = 1.0*sigma;
 }
 
 
@@ -783,47 +798,47 @@ Foam::scalar Foam::linearElasticMohrCoulombPlastic::residual()
     )
     {
         return
-#ifdef OPENFOAMESIORFOUNDATION
+#ifdef OPENFOAM_NOT_EXTEND
             gMax
             (
                 mag
                 (
-                    sigmaEfff_.primitiveField()
-                  - sigmaEfff_.prevIter().primitiveField()
+                    deltaSigmaf_.primitiveField()
+                  - deltaSigmaf_.prevIter().primitiveField()
                 )
-            )/gMax(SMALL + mag(sigmaEfff_.primitiveField()));
+            )/gMax(SMALL + mag(deltaSigmaf_.primitiveField()));
 #else
             gMax
             (
                 mag
                 (
-                    sigmaEfff_.internalField()
-                  - sigmaEfff_.prevIter().internalField()
+                    deltaSigmaf_.internalField()
+                  - deltaSigmaf_.prevIter().internalField()
                 )
-            )/gMax(SMALL + mag(sigmaEfff_.internalField()));
+            )/gMax(SMALL + mag(deltaSigmaf_.internalField()));
 #endif
     }
     else
     {
         return
-#ifdef OPENFOAMESIORFOUNDATION
+#ifdef OPENFOAM_NOT_EXTEND
             gMax
             (
                 mag
                 (
-                    sigmaEff().primitiveField()
-                  - sigmaEff().prevIter().primitiveField()
+                    deltaSigma_.primitiveField()
+                  - deltaSigma_.prevIter().primitiveField()
                 )
-            )/gMax(SMALL + mag(sigmaEff().primitiveField()));
+            )/gMax(SMALL + mag(deltaSigma_.primitiveField()));
 #else
             gMax
             (
                 mag
                 (
-                    sigmaEff().internalField()
-                  - sigmaEff().prevIter().internalField()
+                    deltaSigma_.internalField()
+                  - deltaSigma_.prevIter().internalField()
                 )
-            )/gMax(SMALL + mag(sigmaEff().internalField()));
+            )/gMax(SMALL + mag(deltaSigma_.internalField()));
 #endif
     }
 }
@@ -841,14 +856,14 @@ void Foam::linearElasticMohrCoulombPlastic::updateTotalFields()
 
     // Calculate increment of plastic strain
     // This is complicated because DEpsilonP also has a volumetric term
-#ifdef OPENFOAMESIORFOUNDATION
+#ifdef OPENFOAM_NOT_EXTEND
     symmTensorField& DEpsilonPI = DEpsilonP_.primitiveFieldRef();
 #else
     symmTensorField& DEpsilonPI = DEpsilonP_.internalField();
 #endif
 
     const symmTensorField& DEpsilonI = DEpsilon_;
-    const symmTensorField& sigmaEffI = sigmaEff();
+    const symmTensorField& deltaSigmaI = deltaSigma_;
     const scalarField& activeYieldI = activeYield_;
     const scalar mu = mu_.value();
     const scalar lambda = lambda_.value();
@@ -868,28 +883,28 @@ void Foam::linearElasticMohrCoulombPlastic::updateTotalFields()
         {
             // Off-diagonal strains
             DEpsilonPI[cellI].xy() =
-                DEpsilonI[cellI].xy() - (sigmaEffI[cellI].xy()/(2.0*mu));
+                DEpsilonI[cellI].xy() - (deltaSigmaI[cellI].xy()/(2.0*mu));
             DEpsilonPI[cellI].xz() =
-                DEpsilonI[cellI].xz() - (sigmaEffI[cellI].xz()/(2.0*mu));
+                DEpsilonI[cellI].xz() - (deltaSigmaI[cellI].xz()/(2.0*mu));
             DEpsilonPI[cellI].yz() =
-                DEpsilonI[cellI].yz() - (sigmaEffI[cellI].yz()/(2.0*mu));
+                DEpsilonI[cellI].yz() - (deltaSigmaI[cellI].yz()/(2.0*mu));
 
             // Solve a linear system (Ax = b) to calculate the strains on the
             // diagonal strains
             const vector b =
                 vector
                 (
-                    sigmaEffI[cellI].xx()
+                    deltaSigmaI[cellI].xx()
                  - (2.0*mu + lambda)*DEpsilonI[cellI].xx()
                  - lambda*DEpsilonI[cellI].yy()
                  - lambda*DEpsilonI[cellI].zz(),
 
-                    sigmaEffI[cellI].yy()
+                    deltaSigmaI[cellI].yy()
                  - lambda*DEpsilonI[cellI].xx()
                  - (2.0*mu + lambda)*DEpsilonI[cellI].yy()
                  - lambda*DEpsilonI[cellI].zz(),
 
-                    sigmaEffI[cellI].zz()
+                    deltaSigmaI[cellI].zz()
                  - lambda*DEpsilonI[cellI].xx()
                  - lambda*DEpsilonI[cellI].yy()
                  - (2.0*mu + lambda)*DEpsilonI[cellI].zz()

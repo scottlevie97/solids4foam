@@ -1,10 +1,4 @@
 /*---------------------------------------------------------------------------*\
-  =========                 |
-  \\      /  F ield         | foam-extend: Open Source CFD
-   \\    /   O peration     | Version:     3.2
-    \\  /    A nd           | Web:         http://www.foam-extend.org
-     \\/     M anipulation  | For copyright notice see file Copyright
--------------------------------------------------------------------------------
 License
     This file is part of solids4foam.
 
@@ -53,16 +47,29 @@ Foam::tmp<Foam::surfaceVectorField> Foam::deltaVectors
     const unallocLabelList& owner = mesh.owner();
     const unallocLabelList& neighbour = mesh.neighbour();
 
-    forAll(owner, facei)
+    forAll(owner, faceI)
     {
-        delta[facei] = C[neighbour[facei]] - C[owner[facei]];
+        delta[faceI] = C[neighbour[faceI]] - C[owner[faceI]];
     }
 
     auto& deltabf =  delta.boundaryField();
 
-    forAll(deltabf, patchi)
+    forAll(deltabf, patchI)
     {
-        deltabf[patchi] = mesh.boundary()[patchi].delta();
+        const labelList faceCells(mesh.boundary()[patchI].faceCells());
+
+        if (deltabf[patchI].coupled())
+        {
+            deltabf[patchI] =
+                C.boundaryField()[patchI].patchNeighbourField()
+              - C.boundaryField()[patchI].patchInternalField();
+        }
+        else
+        {
+            deltabf[patchI] =
+                C.boundaryField()[patchI]
+              - C.boundaryField()[patchI].patchInternalField();
+        }
     }
 
     return tdelta;
