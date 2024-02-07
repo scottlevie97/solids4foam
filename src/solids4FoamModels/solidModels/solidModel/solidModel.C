@@ -35,6 +35,8 @@ License
 #include "meshDualiser.H"
 #include "meshTools.H"
 #include "addToRunTimeSelectionTable.H"
+#include "fvCFD.H"
+
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
@@ -842,6 +844,7 @@ void Foam::solidModel::relaxField(volVectorField& D, int iCorr)
                     mesh().solutionDict().fieldRelaxationFactor(D.name());
             }
 #endif
+
         }
         else
         {
@@ -852,20 +855,372 @@ void Foam::solidModel::relaxField(volVectorField& D, int iCorr)
 
             // Update the relaxation factor field
             aitkenAlpha_ =
-                aitkenAlpha_*(aitkenResidual_.prevIter() & aitkenResidualDelta)
+                (aitkenResidual_ & aitkenResidualDelta)
                /(
                     magSqr(aitkenResidualDelta)
                   + dimensionedScalar("SMALL", dimLength*dimLength, SMALL)
                 );
 
+            Info << "aitkenAlpha_: " << aitkenAlpha_[140] << endl;
+
             // Bound alpha between 0.0 and 2.0
             // This may not be necessary but it seems to help convergence
             aitkenAlpha_ = max(0.0, min(2.0, aitkenAlpha_));
+
+            Info << "aitkenAlpha_ used: " << aitkenAlpha_[140] << endl;
+            Info << "max aitkenAlpha: " << gMax(aitkenAlpha_) << endl;
+
+
+            if (gMax(aitkenAlpha_) == 0.0)
+            {
+                Info << "aitkenAlpha_ = 0" << endl;
+            }
+
         }
 
         // Relax the field
         D -= aitkenAlpha_*aitkenResidual_;
     }
+    else if (relaxationMethod_ == "AitkenScalar")
+    {
+        // See Aitken method at:
+        // http://empire-multiphysics.com/projects/empire/wiki/Aitken_Relaxation
+        // and
+        // A partitioned solution approach for electro-thermo-
+        // problems, Patrick Erbts, Stefan Hartmann, Alexander Duster.
+
+        // Store aitkenResidual previous iteration
+        aitkenResidual_.storePrevIter();
+
+        // Calculate new aitkenResidual
+        aitkenResidual_ = D.prevIter() - D;
+
+        aitkenScalarAlpha_.storePrevIter();
+
+        if (iCorr < 2)
+        {
+            // Fixed under-relaxation is applied on the first iteration
+            aitkenScalarAlpha_ = vector::one;
+
+// #ifdef OPENFOAMESIORFOUNDATION
+//             if (mesh().relaxField(D.name()))
+//             {
+//                 aitkenAlpha_ =
+//                     mesh().fieldRelaxationFactor(D.name());
+//             }
+// #else
+//             if (mesh().solutionDict().relaxField(D.name()))
+//             {
+//                 aitkenScalarAlpha_ =
+//                     mesh().solutionDict().fieldRelaxationFactor(D.name());
+//             }
+// #endif
+
+        }
+        else
+        {
+            const volVectorField aitkenResidualDelta
+            (
+                aitkenResidual_.prevIter() - aitkenResidual_
+            );
+
+            // aitkenScalarAlpha_ is vectorField
+            //  treating each direction as a scalar sequence
+
+            forAll(aitkenScalarAlpha_, cellI)
+            {
+                aitkenScalarAlpha_[cellI].x() =
+                aitkenResidual_[cellI].x()/
+                (aitkenResidualDelta[cellI].x() + SMALL);
+                // (aitkenResidual_[cellI].x() - aitkenResidual_.prevIter()[cellI].x() + SMALL);
+
+                aitkenScalarAlpha_[cellI].y() =
+                aitkenResidual_[cellI].y()/
+                (aitkenResidualDelta[cellI].z() + SMALL);
+                // (aitkenResidual_[cellI].y() - aitkenResidual_.prevIter()[cellI].y() + SMALL);
+
+                aitkenScalarAlpha_[cellI].z() =
+                aitkenResidual_[cellI].z()/
+                (aitkenResidualDelta[cellI].z() + SMALL);
+                // (aitkenResidual_[cellI].z() - aitkenResidual_.prevIter()[cellI].z() + SMALL);
+
+                // Bound alpha between 0.0 and 2.0
+                // This may not be necessary but it seems to help convergence
+                aitkenScalarAlpha_[cellI].x() = max(0.0, min(2.0, aitkenScalarAlpha_[cellI].x()));
+                aitkenScalarAlpha_[cellI].y() = max(0.0, min(2.0, aitkenScalarAlpha_[cellI].y()));
+                aitkenScalarAlpha_[cellI].z() = max(0.0, min(2.0, aitkenScalarAlpha_[cellI].z()));
+
+            
+                if (cellI==100)
+                {
+                    Info << "rk: " << aitkenResidual_[cellI] << endl;
+                    
+                    Info << aitkenResidual_[cellI] - aitkenResidual_.prevIter()[cellI] << endl;
+                    Info << aitkenResidualDelta[cellI] << endl;
+
+                    Info << "aitkenScalarAlpha_: " << aitkenScalarAlpha_[cellI] << endl;
+                }
+
+
+                aitkenScalarAlpha_[cellI].x() = - aitkenScalarAlpha_.prevIter()[cellI].x()*aitkenScalarAlpha_[cellI].x();
+                aitkenScalarAlpha_[cellI].y() = - aitkenScalarAlpha_.prevIter()[cellI].y()*aitkenScalarAlpha_[cellI].y();
+                aitkenScalarAlpha_[cellI].z() = - aitkenScalarAlpha_.prevIter()[cellI].z()*aitkenScalarAlpha_[cellI].z();
+
+                // Bound alpha between 0.0 and 2.0
+                // This may not be necessary but it seems to help convergence
+                aitkenScalarAlpha_[cellI].x() = max(0.0, min(2.0, aitkenScalarAlpha_[cellI].x()));
+                aitkenScalarAlpha_[cellI].y() = max(0.0, min(2.0, aitkenScalarAlpha_[cellI].y()));
+                aitkenScalarAlpha_[cellI].z() = max(0.0, min(2.0, aitkenScalarAlpha_[cellI].z()));
+
+
+            }
+
+            // Relax the field
+            forAll(aitkenScalarAlpha_, cellI)
+            {
+                D[cellI].x() += aitkenScalarAlpha_[cellI].x()*aitkenResidual_[cellI].x();
+                D[cellI].y() += aitkenScalarAlpha_[cellI].y()*aitkenResidual_[cellI].y();
+                D[cellI].z() += -aitkenScalarAlpha_[cellI].z()*aitkenResidual_[cellI].z();
+
+
+                //  Direct
+                // D[cellI].x() -= sqr(aitkenResidual_[cellI].x())/
+                //     (aitkenResidual_[cellI].x() - aitkenResidual_.prevIter()[cellI].x() + SMALL);
+                // D[cellI].y() -= sqr(aitkenResidual_[cellI].y())/
+                //     (aitkenResidual_[cellI].y() - aitkenResidual_.prevIter()[cellI].y() + SMALL);
+                // D[cellI].z() -= sqr(aitkenResidual_[cellI].z())/
+                //     (aitkenResidual_[cellI].z() - aitkenResidual_.prevIter()[cellI].z() + SMALL); 
+            }
+
+            // aitkenScalarAlpha_ = - aitkenScalarAlpha_;
+
+
+
+            // Update the relaxation factor field
+            // aitkenAlpha_ =
+            //     (aitkenResidual_ & aitkenResidualDelta)
+            //    /(
+            //         magSqr(aitkenResidualDelta)
+            //       + dimensionedScalar("SMALL", dimLength*dimLength, SMALL)
+            //     );
+
+            // Bound alpha between 0.0 and 2.0
+            // This may not be necessary but it seems to help convergence
+            // aitkenScalarAlpha_ = max(0.0, min(2.0, aitkenScalarAlpha_));
+
+            // Info << "aitkenAlpha_ used: " << aitkenAlpha_[140] << endl;
+            // Info << "max aitkenAlpha: " << gMax(aitkenAlpha_) << endl;
+
+
+            // if (gMax(aitkenAlpha_) == 0.0)
+            // {
+            //     Info << "aitkenAlpha_ = 0" << endl;
+            // }
+        }
+
+
+
+        // Relax the field
+        // forAll(aitkenScalarAlpha_, cellI)
+        // {
+        //     D[cellI].x() += aitkenScalarAlpha_[cellI].x()*aitkenResidual_[cellI].x();
+        //     D[cellI].y() += aitkenScalarAlpha_[cellI].y()*aitkenResidual_[cellI].y();
+        //     D[cellI].z() += aitkenScalarAlpha_[cellI].z()*aitkenResidual_[cellI].z();
+
+
+        //     //  Direct
+        //     // D[cellI].x() -= sqr(aitkenResidual_[cellI].x())/
+        //     //     (aitkenResidual_[cellI].x() - aitkenResidual_.prevIter()[cellI].x() + SMALL);
+        //     // D[cellI].y() -= sqr(aitkenResidual_[cellI].y())/
+        //     //     (aitkenResidual_[cellI].y() - aitkenResidual_.prevIter()[cellI].y() + SMALL);
+        //     // D[cellI].z() -= sqr(aitkenResidual_[cellI].z())/
+        //     //     (aitkenResidual_[cellI].z() - aitkenResidual_.prevIter()[cellI].z() + SMALL); 
+        // }
+        // D -= aitkenScalarAlpha_*aitkenResidual_;
+    }
+    else if (relaxationMethod_ == "AitkenScalar2")
+    {
+        // See Aitken method at:
+        // http://empire-multiphysics.com/projects/empire/wiki/Aitken_Relaxation
+        // and
+        // A partitioned solution approach for electro-thermo-
+        // problems, Patrick Erbts, Stefan Hartmann, Alexander Duster.
+
+        // Store aitkenResidual previous iteration
+        aitkenResidual_.storePrevIter();
+
+        // Calculate new aitkenResidual
+        aitkenResidual_ = D - D.prevIter();
+
+        // Calculate the change in residual ratios: r3-r2/r2-r1
+        residualRatio_.storePrevIter();
+        avgResidualRatio_.storePrevIter();
+        
+        // Calculate the change in residual ratios: r3-r2/r2-r1
+        forAll(residualRatio_, cellI)
+        {
+            for (int i = 0; i < 3; ++i)
+            {
+                residualRatio_[cellI][i] = aitkenResidual_[cellI][i] / (aitkenResidual_.prevIter()[cellI][i] + SMALL);
+                avgResidualRatio_[cellI][i] = (residualRatio_[cellI][i]+residualRatio_.prevIter()[cellI][i])/2;
+            }
+        }
+
+        Info << "residualRatio_:" << residualRatio_[100] << endl;
+        Info << "aitkenResidual_:" << aitkenResidual_[100] << endl;
+        Info << "aitkenResidual_.prevIter():" << aitkenResidual_.prevIter()[100] << endl;
+
+        // These values osilate around
+
+        // Point-wise percentage difference:
+
+        forAll(residualRatio_, cellI)
+        {
+            for (int i = 0; i < 3; ++i)
+            {
+                percentageDifference_[cellI][i] = (avgResidualRatio_[cellI][i] - avgResidualRatio_.prevIter()[cellI][i]) / (avgResidualRatio_[cellI][i] + SMALL);
+                percentageDifference_[cellI][i] = mag(percentageDifference_[cellI][i]);
+            }
+        }
+
+        // Make prediction
+        int take1; 
+        int take2; 
+
+        int start = 100;
+        int end = 500;
+        int gap = 10;
+        int rest = 50;
+
+        if (iCorr < 2)
+        {
+            take1 = start;
+            take2 = start+gap;
+        }
+
+        Info << "take1: " << take1 << endl;
+
+        // Take residuals 
+        if((iCorr == take1) & (iCorr < end)) 
+        {
+            Info << "Taking residual 1 from icorr: " << iCorr << endl;
+
+            Info << "take1: " << take1 << endl;
+
+
+            residual1 =  aitkenResidual_;
+
+            take1 = iCorr+gap+rest;
+            take2 = iCorr+gap;
+
+            Info << "take1: " << take1 << endl;
+
+        }
+        if((iCorr == take2 ) & (iCorr < end)) 
+        {
+
+            Info << "Taking residual 2 from icorr: " << iCorr << endl;
+
+            residual2 =  aitkenResidual_;
+            take1 = iCorr + rest;     
+
+            // Make prediction    
+            scalar alpha;        
+            volVectorField alphaF = residual1;
+
+            forAll(residualRatio_, cellI)
+            {
+                for (int i = 0; i < 3; ++i)
+                {
+                    // Calculate alpha field;
+                    alphaF[cellI][i] = residual2[cellI][i]/(residual2[cellI][i] - residual1[cellI][i] + SMALL);
+
+                    alpha = alphaF[cellI][i];
+
+                    if (percentageDifference_[cellI][i] < 0.2)
+                    {
+                        alpha = alphaF[cellI][i];
+                    }
+                    else
+                    {
+                        alpha = 0.0;
+                    }
+
+                    D[cellI][i] = D[cellI][i]*(1-alpha) + D.prevIter()[cellI][i]*alpha;
+                }
+            }
+        }
+
+        // write fields
+
+        if (Foam::exists(Foam::name(iCorr)))
+        {
+            Info << "directory exists" << endl;
+        }
+        else
+        {
+            Info << "Creating directory: " << iCorr << " to store fields" << endl;
+            Foam::mkDir(Foam::name(iCorr));
+        }
+
+        Info << "percentageDifference:" << percentageDifference_[100] << endl;
+
+        Info << "The largest percentage difference of residual ratios is: " << gMax(percentageDifference_) << endl;
+
+        if (iCorr > 0)
+        {
+            volVectorField dataTowrite
+            (
+                IOobject
+                (
+                    "residualRatio",
+                    runTime().timeName(),
+                    "../" + Foam::name(iCorr),
+                    mesh(),
+                    IOobject::NO_READ,
+                    IOobject::AUTO_WRITE
+                ),
+                residualRatio_*1
+            );
+
+            dataTowrite.write();
+
+            volVectorField writeAvgResidualRatio
+            (
+                IOobject
+                (
+                    "avgResidualRatio_",
+                    runTime().timeName(),
+                    "../" + Foam::name(iCorr),
+                    mesh(),
+                    IOobject::NO_READ,
+                    IOobject::AUTO_WRITE
+                ),
+                avgResidualRatio_*1
+            );
+
+            writeAvgResidualRatio.write();
+
+            volVectorField writePercentageDifference
+            (
+                IOobject
+                (
+                    "percentageDifference",
+                    runTime().timeName(),
+                    "../" + Foam::name(iCorr),
+                    mesh(),
+                    IOobject::NO_READ,
+                    IOobject::AUTO_WRITE
+                ),
+                percentageDifference_
+            );
+
+            writePercentageDifference.write();
+        }
+
+
+    }
+
     else if (relaxationMethod_ == "QuasiNewton")
     {
         // This method is a modified form of the IQNILS by Degroote et al.
@@ -1351,6 +1706,19 @@ Foam::solidModel::solidModel
         meshPtr_(),
         dimensionedScalar("one", dimless, 1.0)
     ),
+    aitkenScalarAlpha_
+    (
+        IOobject
+        (
+            "aitkenScalarAlpha",
+            runTime.constant(),
+            meshPtr_(),
+            IOobject::READ_IF_PRESENT,
+            IOobject::NO_WRITE
+        ),
+        meshPtr_(),
+        dimensionedVector("one", dimless, vector::one)
+    ),
     aitkenResidual_
     (
         IOobject
@@ -1364,6 +1732,71 @@ Foam::solidModel::solidModel
         meshPtr_(),
         dimensionedVector("zero", dimLength, vector::zero)
     ),
+    residualRatio_
+    (
+        IOobject
+        (
+            "residualRatio",
+            runTime.constant(),
+            meshPtr_(),
+            IOobject::READ_IF_PRESENT,
+            IOobject::NO_WRITE
+        ),
+        meshPtr_(),
+        dimensionedVector("zero", dimless, vector::zero)
+    ),  
+    avgResidualRatio_
+    (
+        IOobject
+        (
+            "residualRatio",
+            runTime.constant(),
+            meshPtr_(),
+            IOobject::READ_IF_PRESENT,
+            IOobject::NO_WRITE
+        ),
+        meshPtr_(),
+        dimensionedVector("zero", dimless, vector::zero)
+    ),
+    percentageDifference_
+    (
+        IOobject
+        (
+            "percentageDifference",
+            runTime.constant(),
+            meshPtr_(),
+            IOobject::READ_IF_PRESENT,
+            IOobject::NO_WRITE
+        ),
+        meshPtr_(),
+        dimensionedVector("zero", dimless, vector::zero)
+    ),  
+    residual1
+    (
+        IOobject
+        (
+            "aitkenResidual",
+            runTime.constant(),
+            meshPtr_(),
+            IOobject::READ_IF_PRESENT,
+            IOobject::NO_WRITE
+        ),
+        meshPtr_(),
+        dimensionedVector("zero", dimLength, vector::zero)
+    ),
+    residual2
+    (
+        IOobject
+        (
+            "aitkenResidual",
+            runTime.constant(),
+            meshPtr_(),
+            IOobject::READ_IF_PRESENT,
+            IOobject::NO_WRITE
+        ),
+        meshPtr_(),
+        dimensionedVector("zero", dimLength, vector::zero)
+    ), 
     QuasiNewtonRestartFreq_
     (
         solidModelDict().lookupOrDefault<int>("QuasiNewtonRestartFrequency", 25)

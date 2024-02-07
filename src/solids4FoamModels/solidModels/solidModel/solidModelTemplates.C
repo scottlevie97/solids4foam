@@ -83,7 +83,7 @@ bool Foam::solidModel::converged
     const scalar materialResidual = mechanical().residual();
 
     // If one of the residuals has converged to an order of magnitude
-    // less than the tolerance then consider tjhe solution converged
+    // less than the tolerance then consider the solution converged
     // force at least 1 outer iteration and the material law must be converged
     if (iCorr > 1 && materialResidual < materialTol_)
     {
@@ -177,6 +177,8 @@ bool Foam::solidModel::converged
             << iCorr << " "
             << runTime().elapsedCpuTime() << " "
             << residualvf << " "
+            << solverPerfInitRes << " "
+            << solverPerfNIters << " "
             << endl;
     }
 

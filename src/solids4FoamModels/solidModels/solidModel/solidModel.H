@@ -180,8 +180,20 @@ class solidModel
         //- Aitken's under-relaxation factor field
         volScalarField aitkenAlpha_;
 
+        volVectorField aitkenScalarAlpha_;
+
         //- Aitken's residual field
         volVectorField aitkenResidual_;
+
+        //- Ratios of previous residual fields
+        volVectorField residualRatio_;
+
+        volVectorField avgResidualRatio_;
+
+        volVectorField percentageDifference_;
+
+        volVectorField residual1;
+        volVectorField residual2; 
 
         //- Restart frequency for the Quasi-Newton method
         const int QuasiNewtonRestartFreq_;
