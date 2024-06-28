@@ -1,0 +1,18 @@
+{
+    "files.associations": {
+        "nonLinGeomTotalLagTotalDispSolidML.C": "cpp",
+        "neoHookeanElastic.C": "cpp",
+        "mechanicalLaw.C": "cpp",
+        "*.tcc": "cpp",
+        "MooneyRivlinElastic.C": "cpp",
+        "ostream": "cpp",
+        "solidModel.C": "cpp",
+        "solidModelTemplates.C": "cpp",
+        "lookupSolidModel.C": "cpp",
+        "linGeomTotalDispSolidML.C": "cpp",
+        "cstdlib": "cpp",
+        "nonLinGeomTotalLagTotalDispSolid.C": "cpp",
+        "nonLinGeomTotalLagTotalDispSolidML_debug.C": "cpp",
+        "random": "cpp"
+    }
+}

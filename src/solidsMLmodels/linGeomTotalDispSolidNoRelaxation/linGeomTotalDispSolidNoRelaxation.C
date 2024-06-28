@@ -719,18 +719,7 @@ namespace Foam
 
             fName = "residual_D_iteration" + Foam::name(iteration);
 
-            // volVectorField residual_D_write(
-            //     IOobject(
-            //         fName,
-            //         runTime().timeName(),
-            //         runTime(),
-            //         IOobject::NO_READ,
-            //         IOobject::AUTO_WRITE),
-            //     residual_D);
-                    
-            // residual_D_write.write();
-
-            vectorIOField residual_D_write(
+            volVectorField residual_D_write(
                 IOobject(
                     fName,
                     runTime().timeName(),

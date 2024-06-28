@@ -74,7 +74,10 @@ namespace Foam
               impK_(mechanical().impK()),
               impKf_(mechanical().impKf()),
               rImpK_(1.0 / impK_),
-              predictor_(solidModelDict().lookupOrDefault<Switch>("predictor", false)),
+              predictor_(solidModelDict().lookupOrDefault<Switch>("predictor", Switch(false))),
+              indivResidualFilePtr_(),
+              writeIndivResidualFile_(
+                  solidModelDict().lookupOrDefault<Switch>("writeIndivResidualFile", Switch(false))),
               machineLearning_(
                   solidModelDict().lookupOrDefault<Switch>("machineLearning", Switch(false))),
               machinePredictorIter_(
@@ -86,13 +89,15 @@ namespace Foam
               prevCellD_(),
               testConverged_(
                   solidModelDict().lookupOrDefault<Switch>("testConverged", Switch(false))),
-              tracBcIter_(
-                  solidModelDict().lookupOrDefault<scalar>("tracBcIter", 50)),
               BCloopCorrFile_(),
               writeDisplacementField_(
                   solidModelDict().lookupOrDefault<Switch>("writeDisplacementField", Switch(false))),
               writeDisplacementLimit_(
-                  solidModelDict().lookupOrDefault<scalar>("writeDisplacementLimit", 20))
+                  solidModelDict().lookupOrDefault<scalar>("writeDisplacementLimit", 20)),
+              useCoordinates_(
+                  solidModelDict().lookupOrDefault<Switch>("useCoordinates", false)),
+              predictZ_(
+                  solidModelDict().lookupOrDefault<Switch>("predictZ", true))
         {
             DisRequired();
 

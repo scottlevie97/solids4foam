@@ -79,7 +79,7 @@ namespace Foam
               writeIndivResidualFile_(
                   solidModelDict().lookupOrDefault<Switch>("writeIndivResidualFile", Switch(false))),
               machineLearning_(
-                  solidModelDict().lookupOrDefault<Switch>("machineLearning", Switch(false))),
+                  solidModelDict().lookupOrDefault<Switch>("machineLearning", Switch(false))),writeResidualFile
               machinePredictorIter_(
                   solidModelDict().lookupOrDefault<scalar>("iterationToApplyMachineLearningPredictor", 11)),
               jsonFile_(
@@ -102,7 +102,15 @@ namespace Foam
               predictZ_(
                   solidModelDict().lookupOrDefault<Switch>("predictZ", true)),
               writeAllDisplacmentFields_(
-                  solidModelDict().lookupOrDefault<Switch>("writeAllDisplacmentFields", false))
+                  solidModelDict().lookupOrDefault<Switch>("writeAllDisplacmentFields", false)),
+                start(
+                    solidModelDict().lookupOrDefault<scalar>("start", 20)),
+                jump_size(
+                    solidModelDict().lookupOrDefault<scalar>("jump_size", 10)),
+                gap(
+                    solidModelDict().lookupOrDefault<scalar>("gap", 10)),
+                end(
+                    solidModelDict().lookupOrDefault<scalar>("end", 130))
         {
             DisRequired();
 
@@ -218,7 +226,8 @@ namespace Foam
             vectorIOField dataToWrite(
                 IOobject(
                     "cellCentres",
-                    runTime().timeName(),
+                    runTime().
+                    timeName(),
                     runTime(),
                     IOobject::NO_READ,
                     IOobject::AUTO_WRITE),
@@ -261,9 +270,34 @@ namespace Foam
 
                 Info << "Solving the momentum equation for D" << endl;
 
+                scalar residual_1 = 0.0;
+                scalar residual_2 = 0.0;
+                vectorField residualF_1;
+                vectorField residualF_2;
+                scalar alpha;
+                vectorField alphaF;
+
+                vectorField D_1;
+                vectorField D_2;
+
+                scalar residual_print = 0.0;
+                vectorField relResidualF;
+
+                int predictIcorr = 0;
+                int predictNo = 0;
+
+                scalar relaxationFac = 1;
+
+
                 // Momentum equation loop
                 do
                 {
+                    // residual_print = solverPerfD.initialResidual();
+                    residual_print = residualvf();
+                    if (iCorr > 0)
+                    {
+                        relResidualF = relResidualField();
+                    }
 
                     // Store previous D fields
                     if (machineLearning_ && iCorr > 0 && iCorr < prevCellD_.size() + 1)
@@ -291,6 +325,82 @@ namespace Foam
                             BoundaryTractionLoop();
                         }
                     }
+
+                    if ((iCorr >= start )&& (iCorr < end))
+                    {
+                        residual_1 = residual_print;
+                        residualF_1 = relResidualF;
+
+                        Info << "iCorr: " << iCorr << " > " << start << " and < " << end <<endl;
+
+                        Info << "Storing residual_1: " << residual_1 << endl;  
+                        Info << "residualF_1[0]:" << residualF_1[0] << endl;   
+
+                        D_1 = D()*1; 
+
+                        predictIcorr = iCorr + jump_size;
+                        Info << "Next prediction is at iteration: " << predictIcorr  <<endl;
+
+                        start = iCorr + jump_size + gap;
+                        Info << "Next start is at iteration: " << start  <<endl;
+
+                        predictNo = predictNo + 1;
+
+                    }
+
+                    if (iCorr==predictIcorr & predictNo > 0)
+                    {
+                        residual_2 = residual_print;
+                        residualF_2 = relResidualF;
+                        Info << " Storing residual_2: " << residual_2 << endl;   
+                        Info << "residualF_2[0]:" << residualF_2[0] << endl;   
+
+                        alpha = residual_2 / ( residual_1 - residual_2 );
+                        Info << "Alpha: " << alpha << endl;
+
+                        alphaF = D()*1;
+
+                        // // Update
+                        forAll(alphaF, cellI)
+                        {
+                            alphaF[cellI].x() = residualF_2[cellI][0] / ( residualF_1[cellI][0] - residualF_2[cellI][0] );
+                            alphaF[cellI].y() = residualF_2[cellI][1] / ( residualF_1[cellI][1] - residualF_2[cellI][1] );
+                            alphaF[cellI].z() = residualF_2[cellI][2] / ( residualF_1[cellI][2] - residualF_2[cellI][2] );
+                        }
+
+                        1D_2 = D()*;
+
+                        Info << "alphaF[0]:" << alphaF[0] << endl;  
+                        Info << "alphaF[259]:" << alphaF[259] << endl;  
+
+                        Info << "D()[0]: "<< D()[0] << endl; 
+                        Info << "D()[259]: "<< D()[259] << endl; 
+
+                        // Update using constant alpha
+                        // forAll(D(), cellI)
+                        // {
+                        //     D()[cellI].x() = (1-relaxationFac)*(D()[cellI].x()) + relaxationFac*(D_2[cellI][0] + alpha*D_2[cellI][0] - alpha*D_1[cellI][0]);
+                        //     D()[cellI].y() = (1-relaxationFac)*(D()[cellI].y()) + relaxationFac*(D_2[cellI][1] + alpha*D_2[cellI][1] - alpha*D_1[cellI][1]);
+                        //     D()[cellI].z() = (1-relaxationFac)*(D()[cellI].z()) + relaxationFac*(D_2[cellI][2] + alpha*D_2[cellI][2] - alpha*D_1[cellI][2]);
+                        // }
+
+                        // Update using alpha field
+                        forAll(D(), cellI)
+                        {
+                            D()[cellI].x() = (1-relaxationFac)*(D()[cellI].x()) + relaxationFac*(D_2[cellI][0] + alphaF[cellI][0]*D_2[cellI][0] - alphaF[cellI][0]*D_1[cellI][0]);
+                            D()[cellI].y() = (1-relaxationFac)*(D()[cellI].y()) + relaxationFac*(D_2[cellI][1] + alphaF[cellI][1]*D_2[cellI][1] - alphaF[cellI][1]*D_1[cellI][1]);
+                            D()[cellI].z() = (1-relaxationFac)*(D()[cellI].z()) + relaxationFac*(D_2[cellI][2] + alphaF[cellI][2]*D_2[cellI][2] - alphaF[cellI][2]*D_1[cellI][2]);
+                        }
+
+                        Info << "D()[0] new: "<< D()[0] << endl; 
+                        Info << "D()[259] new: "<< D()[259] << endl; 
+
+
+
+                        BoundaryTractionLoop();
+                    }
+
+
 
                     // Linear momentum equation total displacement form
                     fvVectorMatrix DEqn(
@@ -719,18 +829,7 @@ namespace Foam
 
             fName = "residual_D_iteration" + Foam::name(iteration);
 
-            // volVectorField residual_D_write(
-            //     IOobject(
-            //         fName,
-            //         runTime().timeName(),
-            //         runTime(),
-            //         IOobject::NO_READ,
-            //         IOobject::AUTO_WRITE),
-            //     residual_D);
-                    
-            // residual_D_write.write();
-
-            vectorIOField residual_D_write(
+            volVectorField residual_D_write(
                 IOobject(
                     fName,
                     runTime().timeName(),
@@ -755,6 +854,73 @@ namespace Foam
 
                 cellDisplacementFile_() << endl;
             }
+        }
+
+        scalar linGeomTotalDispSolidML::residualvf()
+        {
+            // Calculate displacement residual based on the relative change of vf
+            scalar denom = gMax(
+                Field<scalar>(
+                    mag(D().internalField() - D().oldTime().internalField())));
+            if (denom < SMALL)
+            {
+                denom = max(
+                    gMax(
+                        mag(D().internalField())),
+                    SMALL);
+            }
+            scalar residualvf =
+                gMax(
+                    mag(D().internalField() - D().prevIter().internalField())) /
+                denom;
+
+            return residualvf;
+        }
+
+        vectorField linGeomTotalDispSolidML::relResidualField()
+        {
+            vectorField residualD = D() - D().prevIter();
+
+            auto res_x = scalarField(residualD.size(), 0);
+            auto res_y = scalarField(residualD.size(), 0);
+            auto res_z = scalarField(residualD.size(), 0);
+
+            forAll(res_x, cell)
+            {
+                res_x[cell] = sqrt(pow(residualD[cell][0], 2));
+                res_y[cell] = sqrt(pow(residualD[cell][1], 2));
+                res_z[cell] = sqrt(pow(residualD[cell][2], 2));
+            };
+
+            auto denom_x = scalarField(D().size(), 0);
+            auto denom_y = scalarField(D().size(), 0);
+            auto denom_z = scalarField(D().size(), 0);
+
+            forAll(denom_x, cell)
+            {
+                denom_x[cell] = sqrt(pow(D()[cell][0], 2));
+                denom_y[cell] = sqrt(pow(D()[cell][1], 2));
+                denom_z[cell] = sqrt(pow(D()[cell][2], 2));
+            };
+
+            scalar res_x_final = max(res_x) / (max(denom_x) + SMALL);
+            scalar res_y_final = max(res_y) / (max(denom_y) + SMALL);
+            scalar res_z_final = max(res_z) / (max(denom_z) + SMALL);
+
+            scalarField res_x_field = res_x / (max(denom_x) + SMALL);
+            scalarField res_y_field = res_y / (max(denom_y) + SMALL);
+            scalarField res_z_field = res_z / (max(denom_z) + SMALL);
+
+            volVectorField residual_D = D() * 1;
+
+            forAll(residual_D, cell)
+            {
+                residual_D[cell][0] = res_x_field[cell];
+                residual_D[cell][1] = res_y_field[cell];
+                residual_D[cell][2] = res_z_field[cell];
+            };
+
+            return residual_D;
         }
 
         // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

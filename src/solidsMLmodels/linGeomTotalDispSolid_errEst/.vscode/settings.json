@@ -1,0 +1,11 @@
+{
+    "files.associations": {
+        "linGeomTotalDispSolidML.C": "cpp",
+        "linGeomTotalDispSolidNoRelaxation.C": "cpp",
+        "linGeomTotalDispSolid.C": "cpp",
+        "random": "cpp",
+        "ostream": "cpp",
+        "cmath": "cpp",
+        "complex": "cpp"
+    }
+}

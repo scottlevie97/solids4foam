@@ -8,10 +8,6 @@
         "limits": "cpp",
         "valarray": "cpp",
         "cmath": "cpp",
-        "complex": "cpp",
-        "unsNonLinGeomTotalLagSolid.C": "cpp",
-        "unsNonLinGeomTotalLagSolidML.C": "cpp",
-        "typeinfo": "cpp",
-        "neoHookeanElastic.C": "cpp"
+        "complex": "cpp"
     }
 }

@@ -100,8 +100,6 @@ namespace Foam
             //- Converged case path for test convergence
             fileName convergedCase_;
 
-            const Switch debugFields_;
-
             //- List of cell D fields for previous
             //  iterations. These are used by the machine learning predictor
             PtrList<vectorField> prevCellD_;
@@ -129,6 +127,14 @@ namespace Foam
 
             //- Predict X, Y and Z fields. This should be switched off for 2D cases.
             const Switch predictZ_;
+
+            // Switch to print all displacement fields for postprocessing
+            const Switch writeAllDisplacmentFields_;
+
+            int start ;
+            int jump_size ;
+            int gap ;
+            int end ;         
 
             // //List of scaling means and std deviations (input data | output data)
             List<vector> kerasScalingMeans_;
@@ -224,9 +230,6 @@ namespace Foam
 
             virtual void writeCellDisplacementList(int iteration);
 
-            // Write debug fields into time directories
-            virtual void writeDebugFields(int iter);
-
             // // - write residual field
             // virtual void writeResidualField(int iCorr);
 
@@ -235,6 +238,12 @@ namespace Foam
                 const vectorField &traction,
                 const scalarField &pressure,
                 const fvPatch &patch) const;
+
+
+            scalar residualvf();
+
+            vectorField relResidualField();
+
         };
 
         // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

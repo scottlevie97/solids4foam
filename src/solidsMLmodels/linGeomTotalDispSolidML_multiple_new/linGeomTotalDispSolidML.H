@@ -103,6 +103,7 @@ namespace Foam
             //- JSON file name
             List<fileName> jsonFiles_;
             
+            // ML input features
             List<fileName> inputsML_;
 
             //- Converged case path for test convergence
@@ -143,9 +144,6 @@ namespace Foam
             //- Write displacement fields for each iteration
             const Switch writeDisplacementField_;
 
-            //- Write displacements up until this iteration
-            const int writeDisplacementLimit_;
-
             //- Use cell centre coordinates as input feature
             const Switch useCoordinates_;
 
@@ -180,7 +178,13 @@ namespace Foam
             //  Relative residual field
             vectorField residualD;
 
+            //  Relative residual field
+            vectorField matrixResidual;
+
             List<int> debug_cells;
+
+            // - Offset iteration
+            int offsetIter_;
 
             // Private Member Functions
 
@@ -279,6 +283,9 @@ namespace Foam
             //  - Calculate relative residual field
             virtual void updateResidualD();
 
+            //  - Calculate matrix residual field
+            virtual void updateMatrixResidual();
+
             scalarField scalarFieldrelResidual();
 
             virtual void writeCellDisplacementList(int iteration);
@@ -294,8 +301,10 @@ namespace Foam
 
             scalar residualvf();
 
+            //- Initialise ML feature storing
             virtual void initMLFieldStoring();
 
+            //- Store ML input features
             virtual void storeMLInputFields();
 
 

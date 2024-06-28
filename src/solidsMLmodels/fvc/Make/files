@@ -1,0 +1,3 @@
+fvcSmooth/fvcSmooth.C
+
+LIB = $(FOAM_LIBBIN)/libfiniteVolume

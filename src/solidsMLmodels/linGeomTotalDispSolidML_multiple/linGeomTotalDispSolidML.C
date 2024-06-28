@@ -223,17 +223,6 @@ namespace Foam
             int startIter = 0;
             int predictionCount = 0;
 
-<<<<<<< HEAD
-=======
-            // Residuals where to make predictions
-            scalarField predictionResiduals;
-            predictionResiduals = scalarField(noPredictions, 0);
-            predictionResiduals[0] = 0.1;
-            predictionResiduals[1] = 0.0005;
-            predictionResiduals[2] = 0.00001;
-            // predictionResiduals[3] = 0.0001;
-
->>>>>>> 09c36566bec91c4e787c9187d8c85a198214d9e0
             // Make prediction is switch is on
             bool predictionSwitch = false;
 
@@ -340,6 +329,12 @@ namespace Foam
                             Info << "residual_print: " << residual_print << endl;
                             Info << "predictionCount: " << predictionCount << endl;
 
+                            forAll(prevCellD_, iter)
+                            {
+                                Info << "iter: " << iter << endl;
+                                Info << prevCellD_[iter][0] << endl;
+                            }
+
 
                             // Predict displacement
                             updateD_ML(predictionCount, jsonFiles_[predictionCount - 1]);
@@ -409,7 +404,9 @@ namespace Foam
                     // Write D field for each iteration
                     if (predictionSwitch)
                     {
-                        writeDisplacementIteration(predictionCount, iCorr - startIter, false);
+                        Info << "The first cell for D input at iteration:" << iCorr - startIter << ":" << endl;
+                        Info << D()[0] << endl;
+                        // writeDisplacementIteration(predictionCount, iCorr - startIter, false);
                     }
 
                     // Store previous D fields

@@ -91,20 +91,24 @@ namespace Foam
             // - Flag to switch to machine learning prediction
             const Switch machineLearning_;
 
+            // - Flag to use residual field as input
+            const Switch useResiduals_;
+
             //- Iteration at which the machine learning predictor is applied
             const int machinePredictorIter_;
 
             //- JSON file name
-            fileName jsonFile_;
+            List<fileName> jsonFiles_;
 
             //- Converged case path for test convergence
             fileName convergedCase_;
 
-            const Switch debugFields_;
-
             //- List of cell D fields for previous
             //  iterations. These are used by the machine learning predictor
             PtrList<vectorField> prevCellD_;
+
+            PtrList<vectorField> prevCellR_;
+
 
             // - Flag to switch to test converged values
             const Switch testConverged_;
@@ -130,9 +134,30 @@ namespace Foam
             //- Predict X, Y and Z fields. This should be switched off for 2D cases.
             const Switch predictZ_;
 
+            // The amount of predictions
+            scalar noPredictions_;
+
+            // ML relax
+            scalar relaxD_ML_;
+
+            const Switch debugFields_;
+
+            //- Hooke's law second Lame parameter, aka shear modulus
+            surfaceScalarField muf_;
+
+            //- Hooke's law first Lame parameter
+            surfaceScalarField lambdaf_;
+
             // //List of scaling means and std deviations (input data | output data)
             List<vector> kerasScalingMeans_;
             List<vector> kerasScalingStds_;
+
+            // The residuals where the predicitons will begin to collect data
+            List<scalar> predictionResiduals_;
+
+            //  Relative residual field
+            vectorField residualD;
+
 
             // Private Member Functions
 
@@ -202,7 +227,7 @@ namespace Foam
             virtual bool evolve();
 
             //- Set D using machine learning predictor
-            virtual void updateD_ML();
+            virtual void updateD_ML(int predictionCount, fileName jsonFile, scalar relaxD_ML);
 
             // - Set D using machine learning predictor
             virtual void updateD_testConverged();
@@ -214,18 +239,24 @@ namespace Foam
             virtual void BoundaryTractionLoop();
 
             // - Write Displacement for each iteration
-            virtual void writeDisplacementIteration(int iteration, bool converged);
+            virtual void writeDisplacementIteration(int predictionCount, int iter, bool converged);
+
+            // - Write Residual for each iteration
+            virtual void writeResidualIteration(int predictionCount, int iter, bool converged);
+        
+            // Write debug fields into time directories
+            virtual void writeDebugFields(int iter);
 
             // - Write Displacement for prediction iteration
-            virtual void writePredictedDField();
+            virtual void writePredictedDField(int predictionCount);
 
             // - Write Displacement for prediction iteration
             virtual void writeResidualFile(int iteration);
 
-            virtual void writeCellDisplacementList(int iteration);
+            //  - Calculate relative residual field
+            virtual void updateResidualD();
 
-            // Write debug fields into time directories
-            virtual void writeDebugFields(int iter);
+            virtual void writeCellDisplacementList(int iteration);
 
             // // - write residual field
             // virtual void writeResidualField(int iCorr);
@@ -235,6 +266,10 @@ namespace Foam
                 const vectorField &traction,
                 const scalarField &pressure,
                 const fvPatch &patch) const;
+
+            scalar residualvf();
+
+
         };
 
         // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

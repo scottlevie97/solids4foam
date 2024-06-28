@@ -1,3 +1,8 @@
-linGeomTotalDispSolidML_2D/linGeomTotalDispSolidML.C
+linGeomTotalDispSolidML_multiple_new/linGeomTotalDispSolidML.C
+
+unsNonLinGeomTotalLagSolidML/unsNonLinGeomTotalLagSolidML.C
+
+nonLinGeomTotalLagTotalDispSolidML/nonLinGeomTotalLagTotalDispSolidML_debug.C
 
 LIB = $(FOAM_USER_LIBBIN)/libsolidsMLmodels
+    
