@@ -25,4 +25,5 @@ EXE_LIBS = \
     -L$(FOAM_USER_LIBBIN) \
     -lsolids4FoamModels \
     -lsolidsMLmodels \
+    -ladaptiveRelativeTolerance \
     $(GFORTRAN_LIBS) 
